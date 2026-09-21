@@ -765,7 +765,7 @@
       const applicantNameSelect = document.getElementById('applicantNameSelect').value;
       const applicantName = applicantNameSelect === '__CUSTOM__' ? document.getElementById('applicantNameCustom').value.trim() : applicantNameSelect;
 
-      // File Upload to Google Drive Flow
+      // File Upload to Google Drive Flow via GAS
       const fileInput = document.getElementById('fileInput');
       if (fileInput.files && fileInput.files[0]) {
         uploadStatus.innerText = "⏳ กำลังสร้างโฟลเดอร์และอัปโหลดไฟล์ไปที่ Google Drive อบต...";
