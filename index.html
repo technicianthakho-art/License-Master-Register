@@ -6,7 +6,7 @@
   <title>ระบบทะเบียนคุมใบอนุญาต - License Control Register</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS Client CDN (ใช้ JSUnpkg Direct) -->
+  <!-- Supabase JS Client CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <!-- Google Fonts: Sarabun -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -97,7 +97,7 @@
     <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col md:flex-row gap-3 justify-between items-center">
       <div class="relative w-full md:w-96">
         <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <input type="text" id="searchInput" oninput="filterData()" placeholder="ค้นหาเลขคุม, เลขใบอนุญาต, ชื่อผู้ขอ..." 
+        <input type="text" id="searchInput" oninput="filterData()" placeholder="ค้นหาเลขที่ใบอนุญาต, ชื่อผู้ขอ, ประเภท..." 
                class="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all">
       </div>
       <div class="flex items-center gap-2 w-full md:w-auto">
@@ -107,7 +107,7 @@
           <option value="active">ใช้งานปกติ</option>
           <option value="expiring">ใกล้หมดอายุ</option>
           <option value="expired">หมดอายุแล้ว</option>
-          <option value="pending">อยู่ระหว่างดำเนินการ</option>
+          <option value="pending">รอดำเนินการ</option>
         </select>
       </div>
     </div>
@@ -118,12 +118,12 @@
         <table class="w-full text-left text-sm text-slate-700">
           <thead class="bg-slate-100/80 border-b border-slate-200 text-xs font-semibold uppercase text-slate-600 tracking-wider">
             <tr>
-              <th scope="col" class="py-3.5 px-4">เลขทะเบียนคุม</th>
               <th scope="col" class="py-3.5 px-4">เลขที่ใบอนุญาต</th>
               <th scope="col" class="py-3.5 px-4">ประเภท / ชื่อใบอนุญาต</th>
               <th scope="col" class="py-3.5 px-4">ผู้ขอ / ผู้ถือใบอนุญาต</th>
+              <th scope="col" class="py-3.5 px-4">วันที่อนุญาต</th>
               <th scope="col" class="py-3.5 px-4">วันที่หมดอายุ</th>
-              <th scope="col" class="py-3.5 px-4 text-center">สถานะ</th>
+              <th scope="col" class="py-3.5 px-4 text-center">สถานะ (คำนวณอัตโนมัติ)</th>
               <th scope="col" class="py-3.5 px-4 text-center">เอกสาร</th>
               <th scope="col" class="py-3.5 px-4 text-center">จัดการ</th>
             </tr>
@@ -145,27 +145,21 @@
 
   <!-- Modal: Add / Edit Record -->
   <div id="recordModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white border border-slate-200 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden transform transition-all">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
       <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
         <h3 id="modalTitle" class="text-lg font-bold text-slate-900">เพิ่มใบอนุญาตใหม่</h3>
         <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-200/50 transition-all">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form id="licenseForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+      <form id="licenseForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4 overflow-y-auto flex-1">
         <input type="hidden" id="recordId">
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">เลขทะเบียนคุม <span class="text-rose-500">*</span></label>
-            <input type="text" id="controlNo" required placeholder="เช่น REG-2026-001" 
-                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">เลขที่ใบอนุญาต <span class="text-rose-500">*</span></label>
-            <input type="text" id="licenseNo" required placeholder="เช่น LIC-889920" 
-                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
-          </div>
+        <input type="hidden" id="existingDocUrl">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">เลขที่ใบอนุญาต <span class="text-rose-500">*</span></label>
+          <input type="text" id="licenseNo" required placeholder="เช่น LIC-2026-001" 
+                 class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
         </div>
 
         <div>
@@ -189,31 +183,31 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">วันที่อนุญาต / ออก</label>
-            <input type="date" id="issueDate" 
+            <label class="block text-xs font-semibold text-slate-700 mb-1">วันที่อนุญาต / ออก <span class="text-rose-500">*</span></label>
+            <input type="date" id="issueDate" required onchange="calculateAutoStatusPreview()" 
                    class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">วันที่หมดอายุ</label>
-            <input type="date" id="expiryDate" 
+            <label class="block text-xs font-semibold text-slate-700 mb-1">วันที่หมดอายุ <span class="text-rose-500">*</span></label>
+            <input type="date" id="expiryDate" required onchange="calculateAutoStatusPreview()" 
                    class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">สถานะ</label>
-            <select id="status" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
-              <option value="active">ใช้งานปกติ</option>
-              <option value="pending">อยู่ระหว่างดำเนินการ</option>
-              <option value="expired">หมดอายุแล้ว</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">ลิงก์ Google Drive เอกสาร/รูปภาพ</label>
-            <input type="url" id="documentUrl" placeholder="https://drive.google.com/file/d/..." 
-                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
-          </div>
+        <!-- Dynamic Calculated Status Preview -->
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
+          <span class="text-xs text-slate-600 font-medium">สถานะที่จะถูกคำนวณ:</span>
+          <span id="autoStatusBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700">
+            โปรดเลือกวันที่
+          </span>
+        </div>
+
+        <!-- File Upload Section -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">แนบไฟล์เอกสาร / รูปภาพ (PDF, JPG, PNG)</label>
+          <input type="file" id="fileInput" accept="application/pdf,image/*" 
+                 class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer border border-slate-300 rounded-lg p-1">
+          <p id="fileStatusText" class="text-[11px] text-slate-400 mt-1">รองรับไฟล์เอกสาร PDF และรูปภาพขนาดไม่เกิน 5MB</p>
         </div>
 
         <div>
@@ -233,24 +227,18 @@
     </div>
   </div>
 
-  <!-- Modal: Preview Image/Document -->
+  <!-- Modal: Preview Image/PDF Document -->
   <div id="previewModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white border border-slate-200 rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col h-[85vh]">
       <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-        <h3 id="previewTitle" class="text-base font-bold text-slate-900">ตัวอย่างเอกสาร</h3>
+        <h3 id="previewTitle" class="text-base font-bold text-slate-900">ตัวอย่างเอกสารใบอนุญาต</h3>
         <button onclick="closePreviewModal()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-200/50 transition-all">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <div class="p-4 bg-slate-100 flex-1 overflow-auto flex items-center justify-center min-h-[300px]">
-        <img id="previewImage" src="" alt="เอกสาร" class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-md hidden">
-        <div id="previewFallback" class="text-center space-y-3 hidden">
-          <i data-lucide="file-text" class="w-12 h-12 text-slate-400 mx-auto"></i>
-          <p class="text-sm text-slate-600">ไม่สามารถแสดงตัวอย่างไฟล์ในนี้ได้</p>
-          <a id="previewExternalLink" href="" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800">
-            เปิดดูใน Google Drive <i data-lucide="external-link" class="w-4 h-4"></i>
-          </a>
-        </div>
+      <div class="p-4 bg-slate-100 flex-1 overflow-auto flex items-center justify-center">
+        <img id="previewImage" src="" alt="เอกสาร" class="max-w-full max-h-full object-contain rounded-lg shadow-md hidden">
+        <iframe id="previewPdf" src="" class="w-full h-full rounded-lg border border-slate-300 hidden"></iframe>
       </div>
     </div>
   </div>
@@ -263,7 +251,6 @@
     let db;
     let rawData = [];
 
-    // Helper Function Safe Initialize Client
     function initSupabase() {
       if (window.supabase && window.supabase.createClient) {
         db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -275,7 +262,6 @@
     document.addEventListener("DOMContentLoaded", () => {
       if (typeof lucide !== 'undefined') lucide.createIcons();
 
-      // Retry mechanism for Supabase SDK load
       let attempts = 0;
       const interval = setInterval(() => {
         attempts++;
@@ -293,6 +279,48 @@
         }
       }, 200);
     });
+
+    // Compute Auto Status Logic
+    function getAutoStatus(issueDateStr, expiryDateStr) {
+      if (!issueDateStr || !expiryDateStr) return { code: 'pending', text: 'รอดำเนินการ', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200' };
+
+      const now = new Date();
+      now.setHours(0,0,0,0);
+      
+      const issueDate = new Date(issueDateStr);
+      issueDate.setHours(0,0,0,0);
+
+      const expDate = new Date(expiryDateStr);
+      expDate.setHours(0,0,0,0);
+
+      const in30Days = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+
+      if (now < issueDate) {
+        return { code: 'pending', text: 'รอดำเนินการ', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200' };
+      } else if (now > expDate) {
+        return { code: 'expired', text: 'หมดอายุ', badgeClass: 'bg-rose-100 text-rose-800 border-rose-200' };
+      } else if (expDate <= in30Days) {
+        return { code: 'expiring', text: 'ใกล้หมดอายุ', badgeClass: 'bg-amber-100 text-amber-800 border-amber-200' };
+      } else {
+        return { code: 'active', text: 'ใช้งานปกติ', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
+      }
+    }
+
+    function calculateAutoStatusPreview() {
+      const issue = document.getElementById('issueDate').value;
+      const expiry = document.getElementById('expiryDate').value;
+      const badge = document.getElementById('autoStatusBadge');
+
+      if (!issue || !expiry) {
+        badge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700";
+        badge.innerText = "โปรดเลือกวันที่";
+        return;
+      }
+
+      const st = getAutoStatus(issue, expiry);
+      badge.className = `text-xs font-semibold px-2.5 py-1 rounded-full border ${st.badgeClass}`;
+      badge.innerText = st.text;
+    }
 
     async function fetchLicenses() {
       if (!db) return;
@@ -318,36 +346,14 @@
       }
     }
 
-    function convertDriveUrl(url) {
-      if (!url) return '';
-      const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-      if (match && match[1]) {
-        return `https://lh3.googleusercontent.com/d/${match[1]}`;
-      }
-      return url;
-    }
-
     function updateStats(data) {
-      const now = new Date();
-      const in30Days = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
-
-      let active = 0;
-      let expiring = 0;
-      let expired = 0;
+      let active = 0, expiring = 0, expired = 0;
 
       data.forEach(item => {
-        if (!item.expiry_date) {
-          active++;
-          return;
-        }
-        const expDate = new Date(item.expiry_date);
-        if (expDate < now) {
-          expired++;
-        } else if (expDate <= in30Days) {
-          expiring++;
-        } else {
-          active++;
-        }
+        const st = getAutoStatus(item.issue_date, item.expiry_date);
+        if (st.code === 'active') active++;
+        else if (st.code === 'expiring') expiring++;
+        else if (st.code === 'expired') expired++;
       });
 
       document.getElementById('stat-total').innerText = data.length;
@@ -368,51 +374,30 @@
         return;
       }
 
-      const now = new Date();
-      const in30Days = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
-
       tbody.innerHTML = data.map(item => {
-        let badgeHtml = '';
-        let isExpired = false;
-        let isExpiring = false;
+        const st = getAutoStatus(item.issue_date, item.expiry_date);
+        const badgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${st.badgeClass}">${st.text}</span>`;
 
-        if (item.expiry_date) {
-          const expDate = new Date(item.expiry_date);
-          if (expDate < now) {
-            isExpired = true;
-          } else if (expDate <= in30Days) {
-            isExpiring = true;
-          }
-        }
-
-        if (item.status === 'pending') {
-          badgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">รอดำเนินการ</span>`;
-        } else if (isExpired || item.status === 'expired') {
-          badgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 border border-rose-200">หมดอายุ</span>`;
-        } else if (isExpiring) {
-          badgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">ใกล้หมดอายุ</span>`;
-        } else {
-          badgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">ปกติ</span>`;
-        }
+        const issueText = item.issue_date 
+          ? new Date(item.issue_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+          : '-';
 
         const expiryText = item.expiry_date 
           ? new Date(item.expiry_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
           : '-';
 
-        const directImgUrl = convertDriveUrl(item.document_url);
-
         return `
           <tr class="hover:bg-slate-50 transition-colors">
-            <td class="py-3 px-4 font-semibold text-slate-900">${item.control_no}</td>
-            <td class="py-3 px-4 font-mono text-slate-600">${item.license_no}</td>
-            <td class="py-3 px-4">${item.license_type}</td>
-            <td class="py-3 px-4 font-medium text-slate-800">${item.applicant_name}</td>
+            <td class="py-3 px-4 font-mono font-semibold text-slate-900">${item.license_no}</td>
+            <td class="py-3 px-4 text-slate-800 font-medium">${item.license_type}</td>
+            <td class="py-3 px-4 text-slate-700">${item.applicant_name}</td>
+            <td class="py-3 px-4 text-xs font-mono">${issueText}</td>
             <td class="py-3 px-4 text-xs font-mono">${expiryText}</td>
             <td class="py-3 px-4 text-center">${badgeHtml}</td>
             <td class="py-3 px-4 text-center">
               ${item.document_url 
-                ? `<button onclick="openPreview('${directImgUrl}', '${item.document_url}')" class="p-1.5 text-blue-900 hover:bg-blue-50 rounded-lg transition-colors" title="ดูเอกสาร">
-                    <i data-lucide="image" class="w-4 h-4"></i>
+                ? `<button onclick="openPreview('${item.document_url}')" class="p-1.5 text-blue-900 hover:bg-blue-50 rounded-lg transition-colors" title="ดูเอกสาร">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
                    </button>` 
                 : `<span class="text-slate-300">-</span>`}
             </td>
@@ -435,37 +420,20 @@
 
     function filterData() {
       const search = document.getElementById('searchInput').value.toLowerCase();
-      const status = document.getElementById('statusFilter').value;
-
-      const now = new Date();
-      const in30Days = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+      const statusFilter = document.getElementById('statusFilter').value;
 
       const filtered = rawData.filter(item => {
         const matchesSearch = 
-          (item.control_no && item.control_no.toLowerCase().includes(search)) ||
           (item.license_no && item.license_no.toLowerCase().includes(search)) ||
           (item.license_type && item.license_type.toLowerCase().includes(search)) ||
           (item.applicant_name && item.applicant_name.toLowerCase().includes(search));
 
         if (!matchesSearch) return false;
-        if (status === 'all') return true;
 
-        const expDate = item.expiry_date ? new Date(item.expiry_date) : null;
+        if (statusFilter === 'all') return true;
 
-        if (status === 'expired') {
-          return (expDate && expDate < now) || item.status === 'expired';
-        }
-        if (status === 'expiring') {
-          return expDate && expDate >= now && expDate <= in30Days;
-        }
-        if (status === 'active') {
-          return item.status === 'active' && (!expDate || expDate > in30Days);
-        }
-        if (status === 'pending') {
-          return item.status === 'pending';
-        }
-
-        return true;
+        const st = getAutoStatus(item.issue_date, item.expiry_date);
+        return st.code === statusFilter;
       });
 
       renderTable(filtered);
@@ -480,6 +448,19 @@
       document.getElementById('recordModal').classList.add('hidden');
       document.getElementById('licenseForm').reset();
       document.getElementById('recordId').value = '';
+      document.getElementById('existingDocUrl').value = '';
+      document.getElementById('fileStatusText').innerText = 'รองรับไฟล์เอกสาร PDF และรูปภาพขนาดไม่เกิน 5MB';
+      calculateAutoStatusPreview();
+    }
+
+    // Helper Convert File to Base64
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
     }
 
     async function handleFormSubmit(e) {
@@ -489,16 +470,39 @@
       saveBtn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> บันทึก...`;
 
       const id = document.getElementById('recordId').value;
+      const fileInput = document.getElementById('fileInput');
+      let documentUrl = document.getElementById('existingDocUrl').value;
+
+      // Handle File Upload if selected
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        if (file.size > 5 * 1024 * 1024) {
+          alert('ขนาดไฟล์เกิน 5MB กรุณาเลือกไฟล์ที่เล็กลง');
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> บันทึกข้อมูล`;
+          return;
+        }
+        try {
+          documentUrl = await fileToBase64(file);
+        } catch (err) {
+          alert('เกิดข้อผิดพลาดในการอ่านไฟล์');
+        }
+      }
+
+      const issueDate = document.getElementById('issueDate').value;
+      const expiryDate = document.getElementById('expiryDate').value;
+      const autoStatus = getAutoStatus(issueDate, expiryDate).code;
+
       const payload = {
-        control_no: document.getElementById('controlNo').value.trim(),
+        control_no: document.getElementById('licenseNo').value.trim(), // Reuse license_no for control_no column compatibility
         license_no: document.getElementById('licenseNo').value.trim(),
         license_type: document.getElementById('licenseType').value.trim(),
         applicant_name: document.getElementById('applicantName').value.trim(),
         issuing_authority: document.getElementById('issuingAuthority').value.trim(),
-        issue_date: document.getElementById('issueDate').value || null,
-        expiry_date: document.getElementById('expiryDate').value || null,
-        status: document.getElementById('status').value,
-        document_url: document.getElementById('documentUrl').value.trim(),
+        issue_date: issueDate || null,
+        expiry_date: expiryDate || null,
+        status: autoStatus,
+        document_url: documentUrl,
         remarks: document.getElementById('remarks').value.trim()
       };
 
@@ -530,17 +534,20 @@
       if (!item) return;
 
       document.getElementById('recordId').value = item.id;
-      document.getElementById('controlNo').value = item.control_no || '';
       document.getElementById('licenseNo').value = item.license_no || '';
       document.getElementById('licenseType').value = item.license_type || '';
       document.getElementById('applicantName').value = item.applicant_name || '';
       document.getElementById('issuingAuthority').value = item.issuing_authority || '';
       document.getElementById('issueDate').value = item.issue_date || '';
       document.getElementById('expiryDate').value = item.expiry_date || '';
-      document.getElementById('status').value = item.status || 'active';
-      document.getElementById('documentUrl').value = item.document_url || '';
+      document.getElementById('existingDocUrl').value = item.document_url || '';
       document.getElementById('remarks').value = item.remarks || '';
 
+      if (item.document_url) {
+        document.getElementById('fileStatusText').innerText = 'มีไฟล์แนบเดิมอยู่ในระบบแล้ว (หากต้องการเปลี่ยน ให้เลือกไฟล์ใหม่ด้านบน)';
+      }
+
+      calculateAutoStatusPreview();
       openModal(true);
     }
 
@@ -556,23 +563,21 @@
       }
     }
 
-    function openPreview(directUrl, originalUrl) {
+    function openPreview(docUrl) {
       const img = document.getElementById('previewImage');
-      const fallback = document.getElementById('previewFallback');
-      const extLink = document.getElementById('previewExternalLink');
+      const pdf = document.getElementById('previewPdf');
 
-      extLink.href = originalUrl;
+      img.classList.add('hidden');
+      pdf.classList.add('hidden');
 
-      img.onerror = () => {
-        img.classList.add('hidden');
-        fallback.classList.remove('hidden');
-      };
-      img.onload = () => {
-        fallback.classList.add('hidden');
+      if (docUrl.startsWith('data:application/pdf') || docUrl.endsWith('.pdf')) {
+        pdf.src = docUrl;
+        pdf.classList.remove('hidden');
+      } else {
+        img.src = docUrl;
         img.classList.remove('hidden');
-      };
+      }
 
-      img.src = directUrl;
       document.getElementById('previewModal').classList.remove('hidden');
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
@@ -580,6 +585,7 @@
     function closePreviewModal() {
       document.getElementById('previewModal').classList.add('hidden');
       document.getElementById('previewImage').src = '';
+      document.getElementById('previewPdf').src = '';
     }
   </script>
 </body>
