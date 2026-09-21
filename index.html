@@ -34,6 +34,7 @@
   <!-- Header Navigation -->
   <header class="bg-white/90 backdrop-blur-md sticky top-0 z-30 border-b border-slate-200/80 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-4">
+      
       <div class="flex items-center gap-3.5 w-full sm:w-auto">
         <div class="w-11 h-11 bg-gradient-to-br from-blue-900 to-indigo-900 text-white rounded-2xl flex items-center justify-center shadow-md shadow-blue-900/10">
           <i data-lucide="file-check-2" class="w-6 h-6 text-blue-200"></i>
@@ -66,6 +67,7 @@
 
   <!-- Main Container -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="glass-card p-5 rounded-2xl shadow-sm hover:shadow-md transition-all">
         <div class="flex items-center justify-between">
@@ -186,6 +188,7 @@
   <!-- Add / Edit Record Modal -->
   <div id="recordModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden transform transition-all max-h-[92vh] flex flex-col border border-slate-100">
+      
       <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
         <h3 id="modalTitle" class="text-base font-bold text-slate-900 font-heading">เพิ่มใบอนุญาตใหม่</h3>
         <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 rounded-xl p-1.5 hover:bg-slate-100 transition-all">
@@ -397,7 +400,7 @@
   <script>
     const SUPABASE_URL = "https://rqzmufywsqpbbxmddlf.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxem11Znl3c3FwYmJ4bWRhbGRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NTAwMzYsImV4cCI6MjEwNTUyNjAzNn0.XJ5B_X-8azEA-oRJ54trMyRspaBmr5WZFYB9U0kzn68";
-    const GAS_UPLOADER_URL = "https://script.google.com/macros/s/AKfycbx7CgwOiuS3sTU4act-68LrWhkkWCNpP_EevAGtAfUhz1CGT7oAQYgj85S3m_fnPwK43Q/exec";
+    const GAS_UPLOADER_URL = "https://script.google.com/macros/s/AKfycbxVdgA40iH1R2A_Z5zhU5k0-Y5dn3ycHeMqd2kMlqCwGHvpZmabCviQdKx3sABD2OLTLQ/exec";
     const ADMIN_PASS_HASH = "1234"; 
 
     let db;
@@ -719,7 +722,7 @@
       const applicantNameSelect = document.getElementById('applicantNameSelect').value;
       const applicantName = applicantNameSelect === '__CUSTOM__' ? document.getElementById('applicantNameCustom').value.trim() : applicantNameSelect;
 
-      // File Upload Flow via ArrayBuffer -> GAS
+      // Safe File Upload Flow via ArrayBuffer
       const fileInput = document.getElementById('fileInput');
       if (fileInput.files && fileInput.files[0]) {
         uploadStatus.innerText = "⏳ กำลังสร้างโฟลเดอร์และอัปโหลดไฟล์ไปที่ Google Drive อบต...";
