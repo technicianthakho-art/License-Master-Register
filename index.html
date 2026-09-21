@@ -722,7 +722,7 @@
       const applicantNameSelect = document.getElementById('applicantNameSelect').value;
       const applicantName = applicantNameSelect === '__CUSTOM__' ? document.getElementById('applicantNameCustom').value.trim() : applicantNameSelect;
 
-      // Safe File Upload Flow via ArrayBuffer (แก้ไขจุดเสี่ยง split undefined)
+      // Safe File Upload Flow พร้อมการดักจับ Network/Failed to fetch
       const fileInput = document.getElementById('fileInput');
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
         uploadStatus.innerText = "⏳ กำลังสร้างโฟลเดอร์และอัปโหลดไฟล์ไปที่ Google Drive อบต...";
@@ -730,6 +730,13 @@
 
         try {
           const file = fileInput.files[0];
+
+          // 1. ตรวจสอบขนาดไฟล์ (จำกัดไม่เกิน 10MB เพื่อป้องกัน GAS Timeout)
+          const maxMb = 10;
+          if (file.size > maxMb * 1024 * 1024) {
+            throw new Error(`ไฟล์มีขนาดใหญ่เกินไป (${(file.size / (1024*1024)).toFixed(2)} MB) กรุณาใช้ไฟล์ขนาดไม่เกิน ${maxMb} MB`);
+          }
+
           const rawFileName = (file && file.name) ? file.name : "document.pdf";
           const fileExt = rawFileName.includes('.') ? rawFileName.split('.').pop() : 'pdf';
           const stdFileName = `${licenseNo}_${villageNo}_${licenseType}.${fileExt}`;
@@ -737,15 +744,26 @@
           const arrayBuffer = await file.arrayBuffer();
           const fileBytes = Array.from(new Uint8Array(arrayBuffer));
 
-          const driveRes = await fetch(GAS_UPLOADER_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-              fileBytes: fileBytes,
-              fileName: stdFileName,
-              mimeType: file.type || "application/octet-stream",
-              category: licenseType
-            })
-          });
+          // 2. เรียกยิง API ไปยัง Google Apps Script
+          let driveRes;
+          try {
+            driveRes = await fetch(GAS_UPLOADER_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({
+                fileBytes: fileBytes,
+                fileName: stdFileName,
+                mimeType: file.type || "application/octet-stream",
+                category: licenseType
+              })
+            });
+          } catch (netErr) {
+            throw new Error("ไม่สามารถเชื่อมต่อกับ Google Apps Script ได้ (CORS/Network Error): " + netErr.message);
+          }
+
+          if (!driveRes.ok) {
+            throw new Error(`Google Apps Script ตอบกลับ HTTP Status: ${driveRes.status}`);
+          }
 
           const result = await driveRes.json();
           if (result.status === 'success') {
@@ -755,7 +773,7 @@
           }
         } catch (uploadErr) {
           console.error("Drive Upload Error:", uploadErr);
-          alert("ไม่สามารถอัปโหลดไฟล์เข้า Google Drive ได้: " + uploadErr.message);
+          alert("เกิดข้อผิดพลาดในการอัปโหลดไฟล์: " + uploadErr.message);
           saveBtn.disabled = false;
           saveBtn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> บันทึกข้อมูล`;
           return;
@@ -808,7 +826,7 @@
         await fetchLicenses();
       } catch (err) {
         console.error("Save Error:", err);
-        alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + err.message);
+        alert('เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล: ' + err.message);
       } finally {
         saveBtn.disabled = false;
         saveBtn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> บันทึกข้อมูล`;
@@ -891,7 +909,6 @@
       }
     }
 
-    // ปรับปรุงการเปิด Preview เอกสารให้รองรับทั้ง Google Drive / LH3 ได้สม่ำเสมอ
     function openPreview(docUrl) {
       const pdf = document.getElementById('previewPdf');
       if (!docUrl) return;
