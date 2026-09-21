@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบทะเบียนคุมใบอนุญาต - License Control Register</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Client CDN (Standalone Bundle) -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <!-- Google Fonts: Sarabun -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background-color: #FFFFFF;
+      color: #0F172A;
+    }
+  </style>
+</head>
+<body class="bg-white min-h-screen text-slate-900 flex flex-col">
+
+  <!-- Header Section -->
+  <header class="border-b border-slate-200 bg-white sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-blue-900 text-white rounded-xl shadow-sm">
+          <i data-lucide="file-check-2" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-slate-900 tracking-tight">ทะเบียนคุมใบอนุญาต</h1>
+          <p class="text-xs text-slate-500">License Control Register & Tracking System</p>
+        </div>
+      </div>
+      <button onclick="openModal()" class="w-full sm:w-auto px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-medium rounded-lg text-sm flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        เพิ่มใบอนุญาตใหม่
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+
+    <!-- Bento Grid Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Card 1: Total -->
+      <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">ทั้งหมด</p>
+          <h3 id="stat-total" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+        </div>
+        <div class="p-3 bg-white border border-slate-200 rounded-lg text-slate-700 shadow-sm">
+          <i data-lucide="files" class="w-5 h-5"></i>
+        </div>
+      </div>
+
+      <!-- Card 2: Active -->
+      <div class="p-5 bg-emerald-50/60 rounded-xl border border-emerald-200 flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-emerald-700 uppercase tracking-wider">ใช้งานปกติ</p>
+          <h3 id="stat-active" class="text-2xl font-bold text-emerald-800 mt-1">0</h3>
+        </div>
+        <div class="p-3 bg-white border border-emerald-200 rounded-lg text-emerald-600 shadow-sm">
+          <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+        </div>
+      </div>
+
+      <!-- Card 3: Expiring Soon -->
+      <div class="p-5 bg-amber-50/60 rounded-xl border border-amber-200 flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">ใกล้หมดอายุ (30 วัน)</p>
+          <h3 id="stat-expiring" class="text-2xl font-bold text-amber-800 mt-1">0</h3>
+        </div>
+        <div class="p-3 bg-white border border-amber-200 rounded-lg text-amber-600 shadow-sm">
+          <i data-lucide="clock" class="w-5 h-5"></i>
+        </div>
+      </div>
+
+      <!-- Card 4: Expired -->
+      <div class="p-5 bg-rose-50/60 rounded-xl border border-rose-200 flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-rose-700 uppercase tracking-wider">หมดอายุแล้ว</p>
+          <h3 id="stat-expired" class="text-2xl font-bold text-rose-800 mt-1">0</h3>
+        </div>
+        <div class="p-3 bg-white border border-rose-200 rounded-lg text-rose-600 shadow-sm">
+          <i data-lucide="alert-circle" class="w-5 h-5"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar: Search & Filters -->
+    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col md:flex-row gap-3 justify-between items-center">
+      <div class="relative w-full md:w-96">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input type="text" id="searchInput" oninput="filterData()" placeholder="ค้นหาเลขคุม, เลขใบอนุญาต, ชื่อผู้ขอ..." 
+               class="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all">
+      </div>
+      <div class="flex items-center gap-2 w-full md:w-auto">
+        <label for="statusFilter" class="text-xs font-medium text-slate-600 whitespace-nowrap">สถานะ:</label>
+        <select id="statusFilter" onchange="filterData()" class="w-full md:w-48 py-2 px-3 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-900 transition-all">
+          <option value="all">ทั้งหมด</option>
+          <option value="active">ใช้งานปกติ</option>
+          <option value="expiring">ใกล้หมดอายุ</option>
+          <option value="expired">หมดอายุแล้ว</option>
+          <option value="pending">อยู่ระหว่างดำเนินการ</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Data Table Area -->
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-700">
+          <thead class="bg-slate-100/80 border-b border-slate-200 text-xs font-semibold uppercase text-slate-600 tracking-wider">
+            <tr>
+              <th scope="col" class="py-3.5 px-4">เลขทะเบียนคุม</th>
+              <th scope="col" class="py-3.5 px-4">เลขที่ใบอนุญาต</th>
+              <th scope="col" class="py-3.5 px-4">ประเภท / ชื่อใบอนุญาต</th>
+              <th scope="col" class="py-3.5 px-4">ผู้ขอ / ผู้ถือใบอนุญาต</th>
+              <th scope="col" class="py-3.5 px-4">วันที่หมดอายุ</th>
+              <th scope="col" class="py-3.5 px-4 text-center">สถานะ</th>
+              <th scope="col" class="py-3.5 px-4 text-center">เอกสาร</th>
+              <th scope="col" class="py-3.5 px-4 text-center">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-slate-200">
+            <tr>
+              <td colspan="8" class="py-12 text-center text-slate-400">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <div class="w-6 h-6 border-2 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+                  <span>กำลังดึงข้อมูลทะเบียนคุม...</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal: Add / Edit Record -->
+  <div id="recordModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden transform transition-all">
+      <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+        <h3 id="modalTitle" class="text-lg font-bold text-slate-900">เพิ่มใบอนุญาตใหม่</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-200/50 transition-all">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="licenseForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+        <input type="hidden" id="recordId">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">เลขทะเบียนคุม <span class="text-rose-500">*</span></label>
+            <input type="text" id="controlNo" required placeholder="เช่น REG-2026-001" 
+                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">เลขที่ใบอนุญาต <span class="text-rose-500">*</span></label>
+            <input type="text" id="licenseNo" required placeholder="เช่น LIC-889920" 
+                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อ / ประเภทใบอนุญาต <span class="text-rose-500">*</span></label>
+          <input type="text" id="licenseType" required placeholder="เช่น ใบอนุญาตประกอบกิจการ..." 
+                 class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">ผู้ขอ / ผู้ถือใบอนุญาต <span class="text-rose-500">*</span></label>
+            <input type="text" id="applicantName" required placeholder="ชื่อ-นามสกุล / บริษัท" 
+                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">หน่วยงานที่ผู้ออก</label>
+            <input type="text" id="issuingAuthority" placeholder="เช่น อบต.ท่าก๊อ / กรมช่าง" 
+                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">วันที่อนุญาต / ออก</label>
+            <input type="date" id="issueDate" 
+                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">วันที่หมดอายุ</label>
+            <input type="date" id="expiryDate" 
+                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">สถานะ</label>
+            <select id="status" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+              <option value="active">ใช้งานปกติ</option>
+              <option value="pending">อยู่ระหว่างดำเนินการ</option>
+              <option value="expired">หมดอายุแล้ว</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">ลิงก์ Google Drive เอกสาร/รูปภาพ</label>
+            <input type="url" id="documentUrl" placeholder="https://drive.google.com/file/d/..." 
+                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">หมายเหตุ</label>
+          <textarea id="remarks" rows="2" placeholder="รายละเอียดเพิ่มเติม..." 
+                    class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none"></textarea>
+        </div>
+
+        <div class="pt-4 border-t border-slate-200 flex justify-end gap-3">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg text-sm hover:bg-slate-100 transition-all">ยกเลิก</button>
+          <button type="submit" id="saveBtn" class="px-5 py-2 bg-blue-900 text-white font-medium rounded-lg text-sm hover:bg-blue-800 transition-all flex items-center gap-2">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            บันทึกข้อมูล
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Preview Image/Document -->
+  <div id="previewModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+        <h3 id="previewTitle" class="text-base font-bold text-slate-900">ตัวอย่างเอกสาร</h3>
+        <button onclick="closePreviewModal()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-200/50 transition-all">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-4 bg-slate-100 flex-1 overflow-auto flex items-center justify-center min-h-[300px]">
+        <img id="previewImage" src="" alt="เอกสาร" class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-md hidden">
+        <div id="previewFallback" class="text-center space-y-3 hidden">
+          <i data-lucide="file-text" class="w-12 h-12 text-slate-400 mx-auto"></i>
+          <p class="text-sm text-slate-600">ไม่สามารถแสดงตัวอย่างไฟล์ในนี้ได้</p>
+          <a id="previewExternalLink" href="" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800">
+            เปิดดูใน Google Drive <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript App Logic -->
+  <script>
+    const SUPABASE_URL = "https://rqzmufywsqpbbxmddlf.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxem11Znl3c3FwYmJ4bWRhbGRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NTAwMzYsImV4cCI6MjEwNTUyNjAzNn0.XJ5B_X-8azEA-oRJ54trMyRspaBmr5WZFYB9U0kzn68";
+    
+    // Global Client
+    let db;
+    let rawData = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof supabase !== 'undefined') {
+        db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      } else {
+        console.error("Supabase SDK is not loaded.");
+      }
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+      fetchLicenses();
+    });
+
+    async function fetchLicenses() {
+      if (!db) return;
+      try {
+        const { data, error } = await db
+          .from('license_register')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        rawData = data || [];
+        updateStats(rawData);
+        renderTable(rawData);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        document.getElementById("tableBody").innerHTML = `
+          <tr>
+            <td colspan="8" class="py-8 text-center text-rose-500">
+              เกิดข้อผิดพลาดในการโหลดข้อมูล: ${err.message}
+            </td>
+          </tr>`;
+      }
+    }
+
+    function convertDriveUrl(url) {
+      if (!url) return '';
+      const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        return `https://lh3.googleusercontent.com/d/${match[1]}`;
+      }
+      return url;
+    }
+
+    function updateStats(data) {
+      const now = new Date();
+      const in30Days = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+
+      let active = 0;
+      let expiring = 0;
+      let expired = 0;
+
+      data.forEach(item => {
+        if (!item.expiry_date) {
+          active++;
+          return;
+        }
+        const expDate = new Date(item.expiry_date);
+        if (expDate < now) {
+          expired++;
+        } else if (expDate <= in30Days) {
+          expiring++;
+        } else {
+          active++;
+        }
+      });
+
+      document.getElementById('stat-total').innerText = data.length;
+      document.getElementById('stat-active').innerText = active;
+      document.getElementById('stat-expiring').innerText = expiring;
+      document.getElementById('stat-expired').innerText = expired;
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById("tableBody");
+      if (data.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-12 text-center text-slate-400">
+              ไม่พบข้อมูลใบอนุญาตในระบบ
+            </td>
+          </tr>`;
+        return;
+      }
+
+      const now = new Date();
+      const in30Days = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+
+      tbody.innerHTML = data.map(item => {
+        let badgeHtml = '';
+        let isExpired = false;
+        let isExpiring = false;
+
+        if (item.expiry_date) {
+          const expDate = new Date(item.expiry_date);
+          if (expDate < now) {
+            isExpired = true;
+          } else if (expDate <= in30Days) {
+            isExpiring = true;
+          }
+        }
+
+        if (item.status === 'pending') {
+          badgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">รอดำเนินการ</span>`;
+        } else if (isExpired || item.status === 'expired') {
+          badgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 border border-rose-200">หมดอายุ</span>`;
+        } else if (isExpiring) {
+          badgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">ใกล้หมดอายุ</span>`;
+        } else {
+          badgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">ปกติ</span>`;
+        }
+
+        const expiryText = item.expiry_date 
+          ? new Date(item.expiry_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+          : '-';
+
+        const directImgUrl = convertDriveUrl(item.document_url);
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="py-3 px-4 font-semibold text-slate-900">${item.control_no}</td>
+            <td class="py-3 px-4 font-mono text-slate-600">${item.license_no}</td>
+            <td class="py-3 px-4">${item.license_type}</td>
+            <td class="py-3 px-4 font-medium text-slate-800">${item.applicant_name}</td>
+            <td class="py-3 px-4 text-xs font-mono">${expiryText}</td>
+            <td class="py-3 px-4 text-center">${badgeHtml}</td>
+            <td class="py-3 px-4 text-center">
+              ${item.document_url 
+                ? `<button onclick="openPreview('${directImgUrl}', '${item.document_url}')" class="p-1.5 text-blue-900 hover:bg-blue-50 rounded-lg transition-colors" title="ดูเอกสาร">
+                    <i data-lucide="image" class="w-4 h-4"></i>
+                   </button>` 
+                : `<span class="text-slate-300">-</span>`}
+            </td>
+            <td class="py-3 px-4 text-center">
+              <div class="flex items-center justify-center gap-1">
+                <button onclick="editRecord('${item.id}')" class="p-1.5 text-slate-600 hover:text-blue-900 hover:bg-slate-100 rounded-lg transition-colors" title="แก้ไข">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+                <button onclick="deleteRecord('${item.id}')" class="p-1.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="ลบ">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function filterData() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const status = document.getElementById('statusFilter').value;
+
+      const now = new Date();
+      const in30Days = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+
+      const filtered = rawData.filter(item => {
+        const matchesSearch = 
+          (item.control_no && item.control_no.toLowerCase().includes(search)) ||
+          (item.license_no && item.license_no.toLowerCase().includes(search)) ||
+          (item.license_type && item.license_type.toLowerCase().includes(search)) ||
+          (item.applicant_name && item.applicant_name.toLowerCase().includes(search));
+
+        if (!matchesSearch) return false;
+        if (status === 'all') return true;
+
+        const expDate = item.expiry_date ? new Date(item.expiry_date) : null;
+
+        if (status === 'expired') {
+          return (expDate && expDate < now) || item.status === 'expired';
+        }
+        if (status === 'expiring') {
+          return expDate && expDate >= now && expDate <= in30Days;
+        }
+        if (status === 'active') {
+          return item.status === 'active' && (!expDate || expDate > in30Days);
+        }
+        if (status === 'pending') {
+          return item.status === 'pending';
+        }
+
+        return true;
+      });
+
+      renderTable(filtered);
+    }
+
+    function openModal(isEdit = false) {
+      document.getElementById('modalTitle').innerText = isEdit ? 'แก้ไขข้อมูลใบอนุญาต' : 'เพิ่มใบอนุญาตใหม่';
+      document.getElementById('recordModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('recordModal').classList.add('hidden');
+      document.getElementById('licenseForm').reset();
+      document.getElementById('recordId').value = '';
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> บันทึก...`;
+
+      const id = document.getElementById('recordId').value;
+      const payload = {
+        control_no: document.getElementById('controlNo').value.trim(),
+        license_no: document.getElementById('licenseNo').value.trim(),
+        license_type: document.getElementById('licenseType').value.trim(),
+        applicant_name: document.getElementById('applicantName').value.trim(),
+        issuing_authority: document.getElementById('issuingAuthority').value.trim(),
+        issue_date: document.getElementById('issueDate').value || null,
+        expiry_date: document.getElementById('expiryDate').value || null,
+        status: document.getElementById('status').value,
+        document_url: document.getElementById('documentUrl').value.trim(),
+        remarks: document.getElementById('remarks').value.trim()
+      };
+
+      try {
+        let error;
+        if (id) {
+          const res = await db.from('license_register').update(payload).eq('id', id);
+          error = res.error;
+        } else {
+          const res = await db.from('license_register').insert([payload]);
+          error = res.error;
+        }
+
+        if (error) throw error;
+
+        closeModal();
+        await fetchLicenses();
+      } catch (err) {
+        alert('เกิดข้อผิดพลาดในการบันทึก: ' + err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> บันทึกข้อมูล`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      }
+    }
+
+    function editRecord(id) {
+      const item = rawData.find(r => r.id === id);
+      if (!item) return;
+
+      document.getElementById('recordId').value = item.id;
+      document.getElementById('controlNo').value = item.control_no || '';
+      document.getElementById('licenseNo').value = item.license_no || '';
+      document.getElementById('licenseType').value = item.license_type || '';
+      document.getElementById('applicantName').value = item.applicant_name || '';
+      document.getElementById('issuingAuthority').value = item.issuing_authority || '';
+      document.getElementById('issueDate').value = item.issue_date || '';
+      document.getElementById('expiryDate').value = item.expiry_date || '';
+      document.getElementById('status').value = item.status || 'active';
+      document.getElementById('documentUrl').value = item.document_url || '';
+      document.getElementById('remarks').value = item.remarks || '';
+
+      openModal(true);
+    }
+
+    async function deleteRecord(id) {
+      if (!confirm('คุณต้องการลบรายการใบอนุญาตนี้ใช่หรือไม่?')) return;
+
+      try {
+        const { error } = await db.from('license_register').delete().eq('id', id);
+        if (error) throw error;
+        await fetchLicenses();
+      } catch (err) {
+        alert('ไม่สามารถลบข้อมูลได้: ' + err.message);
+      }
+    }
+
+    function openPreview(directUrl, originalUrl) {
+      const img = document.getElementById('previewImage');
+      const fallback = document.getElementById('previewFallback');
+      const extLink = document.getElementById('previewExternalLink');
+
+      extLink.href = originalUrl;
+
+      img.onerror = () => {
+        img.classList.add('hidden');
+        fallback.classList.remove('hidden');
+      };
+      img.onload = () => {
+        fallback.classList.add('hidden');
+        img.classList.remove('hidden');
+      };
+
+      img.src = directUrl;
+      document.getElementById('previewModal').classList.remove('hidden');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function closePreviewModal() {
+      document.getElementById('previewModal').classList.add('hidden');
+      document.getElementById('previewImage').src = '';
+    }
+  </script>
+</body>
+</html>
