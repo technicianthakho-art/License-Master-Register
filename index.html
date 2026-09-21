@@ -46,12 +46,6 @@
       </div>
 
       <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-        <a href="https://drive.google.com/drive/folders/1W2vo1TpBiRZyO6TH_Ig3itDfu2UAuqb6" target="_blank" rel="noopener noreferrer" 
-           class="px-3.5 py-2 border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium rounded-xl text-xs flex items-center gap-1.5 transition-all font-heading">
-          <i data-lucide="folder-open" class="w-3.5 h-3.5 text-amber-600"></i>
-          <span>คลัง Google Drive</span>
-        </a>
-
         <button id="adminAuthBtn" onclick="toggleAdminAuth()" class="px-4 py-2 border border-slate-200 hover:border-slate-300 bg-white text-slate-700 font-medium rounded-xl text-xs flex items-center gap-2 transition-all shadow-sm active:scale-95 font-heading">
           <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
           <span id="adminBtnText">เข้าสู่ระบบ Admin</span>
@@ -352,16 +346,16 @@
           </span>
         </div>
 
-        <!-- Safe File Upload Section -->
+        <!-- Supabase Storage Direct Upload Section -->
         <div class="space-y-2 p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl">
-          <label class="block font-semibold text-slate-700 font-heading">แนบไฟล์เอกสาร / รูปภาพ (อัปโหลดเข้า Google Drive อบต. อัตโนมัติ)</label>
+          <label class="block font-semibold text-slate-700 font-heading">แนบไฟล์เอกสาร / รูปภาพ (อัปโหลดตรงเข้า Supabase Storage)</label>
           <input type="file" id="fileInput" accept="application/pdf,image/*" 
                  class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-900 file:text-white hover:file:bg-blue-800 cursor-pointer border border-slate-200 rounded-xl p-1 bg-white">
           <div class="relative">
-            <input type="url" id="documentUrlInput" placeholder="หรือวางลิงก์ Google Drive ลอย..." 
+            <input type="url" id="documentUrlInput" placeholder="หรือวางลิงก์เอกสารภายนอก..." 
                    class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
           </div>
-          <p id="uploadStatusText" class="text-[11px] text-slate-500 font-light">ระบบจะสร้างโฟลเดอร์แยกตามประเภทใบอนุญาตใน Google Drive ให้อัตโนมัติ</p>
+          <p id="uploadStatusText" class="text-[11px] text-slate-500 font-light">ระบบจะจัดเก็บไฟล์ไว้ในคลัง Cloud Storage ของระบบโดยตรง</p>
         </div>
 
         <div>
@@ -400,7 +394,7 @@
   <script>
     const SUPABASE_URL = "https://rqzmufywsqpbbxmddlf.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxem11Znl3c3FwYmJ4bWRhbGRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NTAwMzYsImV4cCI6MjEwNTUyNjAzNn0.XJ5B_X-8azEA-oRJ54trMyRspaBmr5WZFYB9U0kzn68";
-    const GAS_UPLOADER_URL = "https://script.google.com/macros/s/AKfycbxVdgA40iH1R2A_Z5zhU5k0-Y5dn3ycHeMqd2kMlqCwGHvpZmabCviQdKx3sABD2OLTLQ/exec";
+    const BUCKET_NAME = "license-documents";
     const ADMIN_PASS_HASH = "1234"; 
 
     let db;
@@ -582,15 +576,6 @@
       document.getElementById('stat-expired').innerText = expired;
     }
 
-    function convertDriveUrl(url) {
-      if (!url) return '';
-      const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-      if (match && match[1]) {
-        return `https://lh3.googleusercontent.com/d/${match[1]}`;
-      }
-      return url;
-    }
-
     function renderTable(data) {
       const tbody = document.getElementById("tableBody");
       const colSpanCount = isAdmin ? 8 : 7;
@@ -613,8 +598,6 @@
           ? new Date(item.expiry_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
           : '-';
 
-        const directImgUrl = convertDriveUrl(item.document_url);
-
         return `
           <tr class="hover:bg-slate-50/80 transition-colors">
             <td class="py-3.5 px-4 font-mono font-semibold text-slate-900">${item.license_no}</td>
@@ -631,7 +614,7 @@
             <td class="py-3.5 px-4 text-center">${badgeHtml}</td>
             <td class="py-3.5 px-4 text-center">
               ${item.document_url 
-                ? `<button onclick="openPreview('${directImgUrl}')" class="p-2 text-blue-900 hover:bg-blue-50 rounded-xl transition-colors" title="ดูเอกสาร">
+                ? `<button onclick="openPreview('${item.document_url}')" class="p-2 text-blue-900 hover:bg-blue-50 rounded-xl transition-colors" title="ดูเอกสาร">
                     <i data-lucide="file-text" class="w-4 h-4"></i>
                    </button>` 
                 : `<span class="text-slate-300">-</span>`}
@@ -691,7 +674,7 @@
       document.getElementById('issuingAuthorityCustomContainer').classList.add('hidden');
       document.getElementById('applicantNameCustomContainer').classList.add('hidden');
       document.getElementById('feeAmountContainer').classList.add('hidden');
-      document.getElementById('uploadStatusText').innerText = 'ระบบจะสร้างโฟลเดอร์แยกตามประเภทใบอนุญาตใน Google Drive ให้อัตโนมัติ';
+      document.getElementById('uploadStatusText').innerText = 'ระบบจะจัดเก็บไฟล์ไว้ในคลัง Cloud Storage ของระบบโดยตรง';
       calculateAutoStatusPreview();
     }
 
@@ -722,58 +705,40 @@
       const applicantNameSelect = document.getElementById('applicantNameSelect').value;
       const applicantName = applicantNameSelect === '__CUSTOM__' ? document.getElementById('applicantNameCustom').value.trim() : applicantNameSelect;
 
-      // Safe File Upload Flow พร้อมการดักจับ Network/Failed to fetch
+      // 🚀 Supabase Storage Direct Upload Process (เสถียร ไม่ติด CORS/Failed to fetch)
       const fileInput = document.getElementById('fileInput');
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
-        uploadStatus.innerText = "⏳ กำลังสร้างโฟลเดอร์และอัปโหลดไฟล์ไปที่ Google Drive อบต...";
+        uploadStatus.innerText = "⏳ กำลังอัปโหลดไฟล์ตรงเข้า Supabase Storage...";
         uploadStatus.className = "text-[11px] text-blue-600 font-medium animate-pulse";
 
         try {
           const file = fileInput.files[0];
-
-          // 1. ตรวจสอบขนาดไฟล์ (จำกัดไม่เกิน 10MB เพื่อป้องกัน GAS Timeout)
-          const maxMb = 10;
-          if (file.size > maxMb * 1024 * 1024) {
-            throw new Error(`ไฟล์มีขนาดใหญ่เกินไป (${(file.size / (1024*1024)).toFixed(2)} MB) กรุณาใช้ไฟล์ขนาดไม่เกิน ${maxMb} MB`);
-          }
-
           const rawFileName = (file && file.name) ? file.name : "document.pdf";
           const fileExt = rawFileName.includes('.') ? rawFileName.split('.').pop() : 'pdf';
-          const stdFileName = `${licenseNo}_${villageNo}_${licenseType}.${fileExt}`;
+          
+          // กำหนดชื่อไฟล์ที่เป็นระเบียบเรียบร้อยใน Storage
+          const fileNameInStorage = `${Date.now()}_${licenseNo.replace(/[^a-zA-Z0-9_-]/g, '')}.${fileExt}`;
 
-          const arrayBuffer = await file.arrayBuffer();
-          const fileBytes = Array.from(new Uint8Array(arrayBuffer));
-
-          // 2. เรียกยิง API ไปยัง Google Apps Script
-          let driveRes;
-          try {
-            driveRes = await fetch(GAS_UPLOADER_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-              body: JSON.stringify({
-                fileBytes: fileBytes,
-                fileName: stdFileName,
-                mimeType: file.type || "application/octet-stream",
-                category: licenseType
-              })
+          // อัปโหลดตรงเข้า Supabase Storage Bucket "license-documents"
+          const { data: storageData, error: uploadErr } = await db.storage
+            .from(BUCKET_NAME)
+            .upload(fileNameInStorage, file, {
+              cacheControl: '3600',
+              upsert: true
             });
-          } catch (netErr) {
-            throw new Error("ไม่สามารถเชื่อมต่อกับ Google Apps Script ได้ (CORS/Network Error): " + netErr.message);
-          }
 
-          if (!driveRes.ok) {
-            throw new Error(`Google Apps Script ตอบกลับ HTTP Status: ${driveRes.status}`);
-          }
+          if (uploadErr) throw uploadErr;
 
-          const result = await driveRes.json();
-          if (result.status === 'success') {
-            documentUrl = result.fileUrl;
-          } else {
-            throw new Error(result.message || 'ไม่สามารถอัปโหลดเข้า Drive ได้');
-          }
+          // ดึง Public URL ของไฟล์มาเก็บใน Database
+          const { data: publicUrlData } = db.storage
+            .from(BUCKET_NAME)
+            .getPublicUrl(fileNameInStorage);
+
+          documentUrl = publicUrlData.publicUrl;
+
         } catch (uploadErr) {
-          console.error("Drive Upload Error:", uploadErr);
-          alert("เกิดข้อผิดพลาดในการอัปโหลดไฟล์: " + uploadErr.message);
+          console.error("Storage Upload Error:", uploadErr);
+          alert("ไม่สามารถอัปโหลดไฟล์เข้า Storage ได้: " + uploadErr.message);
           saveBtn.disabled = false;
           saveBtn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> บันทึกข้อมูล`;
           return;
@@ -913,6 +878,7 @@
       const pdf = document.getElementById('previewPdf');
       if (!docUrl) return;
 
+      // รองรับทั้ง Google Drive Link และ Supabase Storage Link
       const match = docUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || docUrl.match(/id=([a-zA-Z0-9_-]+)/);
       if (match && match[1]) {
         pdf.src = `https://drive.google.com/file/d/${match[1]}/preview`;
