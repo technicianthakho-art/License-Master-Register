@@ -6,8 +6,8 @@
   <title>ระบบทะเบียนคุมใบอนุญาต - License Control Register</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS Client CDN (Standalone Bundle) -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <!-- Supabase JS Client CDN (ใช้ JSUnpkg Direct) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <!-- Google Fonts: Sarabun -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -260,20 +260,38 @@
     const SUPABASE_URL = "https://rqzmufywsqpbbxmddlf.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxem11Znl3c3FwYmJ4bWRhbGRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NTAwMzYsImV4cCI6MjEwNTUyNjAzNn0.XJ5B_X-8azEA-oRJ54trMyRspaBmr5WZFYB9U0kzn68";
     
-    // Global Client
     let db;
     let rawData = [];
 
+    // Helper Function Safe Initialize Client
+    function initSupabase() {
+      if (window.supabase && window.supabase.createClient) {
+        db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        return true;
+      }
+      return false;
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
-      if (typeof supabase !== 'undefined') {
-        db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      } else {
-        console.error("Supabase SDK is not loaded.");
-      }
-      if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-      }
-      fetchLicenses();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      // Retry mechanism for Supabase SDK load
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts++;
+        if (initSupabase()) {
+          clearInterval(interval);
+          fetchLicenses();
+        } else if (attempts > 10) {
+          clearInterval(interval);
+          document.getElementById("tableBody").innerHTML = `
+            <tr>
+              <td colspan="8" class="py-8 text-center text-rose-500">
+                ไม่สามารถเชื่อมต่อ Supabase SDK ได้ กรุณา Refresh หน้าจออีกครั้ง
+              </td>
+            </tr>`;
+        }
+      }, 200);
     });
 
     async function fetchLicenses() {
@@ -294,7 +312,7 @@
         document.getElementById("tableBody").innerHTML = `
           <tr>
             <td colspan="8" class="py-8 text-center text-rose-500">
-              เกิดข้อผิดพลาดในการโหลดข้อมูล: ${err.message}
+              เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล: ${err.message}
             </td>
           </tr>`;
       }
@@ -344,7 +362,7 @@
         tbody.innerHTML = `
           <tr>
             <td colspan="8" class="py-12 text-center text-slate-400">
-              ไม่พบข้อมูลใบอนุญาตในระบบ
+              ไม่พบข้อมูลใบอนุญาตในระบบ (กดปุ่ม "เพิ่มใบอนุญาตใหม่" เพื่อเริ่มบันทึก)
             </td>
           </tr>`;
         return;
