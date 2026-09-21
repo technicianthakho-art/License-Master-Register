@@ -17,7 +17,7 @@
   <style>
     body { font-family: 'Sarabun', sans-serif; background-color: #F8FAFC; color: #0F172A; }
     h1, h2, h3, h4, .font-heading { font-family: 'Prompt', sans-serif; }
-    .glass-card { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); }
+    .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); }
     .status-badge { font-family: 'Prompt', sans-serif; letter-spacing: 0.02em; }
   </style>
 </head>
@@ -68,6 +68,7 @@
   <!-- Main Container -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
 
+    <!-- Summary Stats Grid -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="glass-card p-5 rounded-2xl shadow-sm hover:shadow-md transition-all">
         <div class="flex items-center justify-between">
@@ -351,16 +352,16 @@
           </span>
         </div>
 
-        <!-- ArrayBuffer File Upload Section -->
+        <!-- Safe File Upload Section -->
         <div class="space-y-2 p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl">
-          <label class="block font-semibold text-slate-700 font-heading">แนบไฟล์เอกสาร / รูปภาพ (สร้างโฟลเดอร์ใน Google Drive อบต. อัตโนมัติ)</label>
+          <label class="block font-semibold text-slate-700 font-heading">แนบไฟล์เอกสาร / รูปภาพ (อัปโหลดเข้า Google Drive อบต. อัตโนมัติ)</label>
           <input type="file" id="fileInput" accept="application/pdf,image/*" 
                  class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-900 file:text-white hover:file:bg-blue-800 cursor-pointer border border-slate-200 rounded-xl p-1 bg-white">
           <div class="relative">
             <input type="url" id="documentUrlInput" placeholder="หรือวางลิงก์ Google Drive ลอย..." 
                    class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
           </div>
-          <p id="uploadStatusText" class="text-[11px] text-slate-500 font-light">ระบบจะสร้างโฟลเดอร์แยกตามประเภทใบอนุญาตใน Google Drive [1W2vo1TpBiRZyO6TH_Ig3itDfu2UAuqb6] ให้อัตโนมัติ</p>
+          <p id="uploadStatusText" class="text-[11px] text-slate-500 font-light">ระบบจะสร้างโฟลเดอร์แยกตามประเภทใบอนุญาตใน Google Drive ให้อัตโนมัติ</p>
         </div>
 
         <div>
@@ -390,8 +391,7 @@
         </button>
       </div>
       <div class="p-4 bg-slate-100/50 flex-1 overflow-auto flex items-center justify-center">
-        <img id="previewImage" src="" alt="เอกสาร" class="max-w-full max-h-full object-contain rounded-2xl shadow-md hidden">
-        <iframe id="previewPdf" src="" class="w-full h-full rounded-2xl border border-slate-200 hidden"></iframe>
+        <iframe id="previewPdf" src="" class="w-full h-full rounded-2xl border border-slate-200 shadow-inner"></iframe>
       </div>
     </div>
   </div>
@@ -691,7 +691,7 @@
       document.getElementById('issuingAuthorityCustomContainer').classList.add('hidden');
       document.getElementById('applicantNameCustomContainer').classList.add('hidden');
       document.getElementById('feeAmountContainer').classList.add('hidden');
-      document.getElementById('uploadStatusText').innerText = 'ระบบจะสร้างโฟลเดอร์แยกตามประเภทใบอนุญาตใน Google Drive [1W2vo1TpBiRZyO6TH_Ig3itDfu2UAuqb6] ให้อัตโนมัติ';
+      document.getElementById('uploadStatusText').innerText = 'ระบบจะสร้างโฟลเดอร์แยกตามประเภทใบอนุญาตใน Google Drive ให้อัตโนมัติ';
       calculateAutoStatusPreview();
     }
 
@@ -722,26 +722,27 @@
       const applicantNameSelect = document.getElementById('applicantNameSelect').value;
       const applicantName = applicantNameSelect === '__CUSTOM__' ? document.getElementById('applicantNameCustom').value.trim() : applicantNameSelect;
 
-      // Safe File Upload Flow via ArrayBuffer
+      // Safe File Upload Flow via ArrayBuffer (แก้ไขจุดเสี่ยง split undefined)
       const fileInput = document.getElementById('fileInput');
-      if (fileInput.files && fileInput.files[0]) {
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
         uploadStatus.innerText = "⏳ กำลังสร้างโฟลเดอร์และอัปโหลดไฟล์ไปที่ Google Drive อบต...";
         uploadStatus.className = "text-[11px] text-blue-600 font-medium animate-pulse";
 
         try {
           const file = fileInput.files[0];
+          const rawFileName = (file && file.name) ? file.name : "document.pdf";
+          const fileExt = rawFileName.includes('.') ? rawFileName.split('.').pop() : 'pdf';
+          const stdFileName = `${licenseNo}_${villageNo}_${licenseType}.${fileExt}`;
+
           const arrayBuffer = await file.arrayBuffer();
           const fileBytes = Array.from(new Uint8Array(arrayBuffer));
-          
-          const fileExt = file.name.split('.').pop();
-          const stdFileName = `${licenseNo}_${villageNo}_${licenseType}.${fileExt}`;
 
           const driveRes = await fetch(GAS_UPLOADER_URL, {
             method: 'POST',
             body: JSON.stringify({
               fileBytes: fileBytes,
               fileName: stdFileName,
-              mimeType: file.type,
+              mimeType: file.type || "application/octet-stream",
               category: licenseType
             })
           });
@@ -890,19 +891,16 @@
       }
     }
 
+    // ปรับปรุงการเปิด Preview เอกสารให้รองรับทั้ง Google Drive / LH3 ได้สม่ำเสมอ
     function openPreview(docUrl) {
-      const img = document.getElementById('previewImage');
       const pdf = document.getElementById('previewPdf');
+      if (!docUrl) return;
 
-      img.classList.add('hidden');
-      pdf.classList.add('hidden');
-
-      if (docUrl.includes('drive.google.com') || docUrl.includes('lh3.googleusercontent.com') || docUrl.endsWith('.pdf')) {
-        pdf.src = docUrl;
-        pdf.classList.remove('hidden');
+      const match = docUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || docUrl.match(/id=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        pdf.src = `https://drive.google.com/file/d/${match[1]}/preview`;
       } else {
-        img.src = docUrl;
-        img.classList.remove('hidden');
+        pdf.src = docUrl;
       }
 
       document.getElementById('previewModal').classList.remove('hidden');
@@ -911,7 +909,6 @@
 
     function closePreviewModal() {
       document.getElementById('previewModal').classList.add('hidden');
-      document.getElementById('previewImage').src = '';
       document.getElementById('previewPdf').src = '';
     }
   </script>
