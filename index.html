@@ -33,7 +33,7 @@
         </div>
         <div>
           <h1 class="text-xl font-bold text-slate-900 tracking-tight">ทะเบียนคุมใบอนุญาต</h1>
-          <p class="text-xs text-slate-500">License Control Register & Tracking System</p>
+          <p class="text-xs text-slate-500">License Control Register & Tracking System - อบต.ท่าก๊อ</p>
         </div>
       </div>
       <button onclick="openModal()" class="w-full sm:w-auto px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-medium rounded-lg text-sm flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95">
@@ -73,7 +73,7 @@
       <!-- Card 3: Expiring Soon -->
       <div class="p-5 bg-amber-50/60 rounded-xl border border-amber-200 flex items-center justify-between">
         <div>
-          <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">ใกล้หมดอายุ (30 วัน)</p>
+          <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">ใกล้หมดอายุ</p>
           <h3 id="stat-expiring" class="text-2xl font-bold text-amber-800 mt-1">0</h3>
         </div>
         <div class="p-3 bg-white border border-amber-200 rounded-lg text-amber-600 shadow-sm">
@@ -97,7 +97,7 @@
     <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col md:flex-row gap-3 justify-between items-center">
       <div class="relative w-full md:w-96">
         <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <input type="text" id="searchInput" oninput="filterData()" placeholder="ค้นหาเลขที่ใบอนุญาต, ชื่อผู้ขอ, ประเภท..." 
+        <input type="text" id="searchInput" oninput="filterData()" placeholder="ค้นหาเลขที่ใบอนุญาต, หมู่บ้าน, ชื่อผู้ขอ..." 
                class="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all">
       </div>
       <div class="flex items-center gap-2 w-full md:w-auto">
@@ -119,11 +119,11 @@
           <thead class="bg-slate-100/80 border-b border-slate-200 text-xs font-semibold uppercase text-slate-600 tracking-wider">
             <tr>
               <th scope="col" class="py-3.5 px-4">เลขที่ใบอนุญาต</th>
-              <th scope="col" class="py-3.5 px-4">ประเภท / ชื่อใบอนุญาต</th>
-              <th scope="col" class="py-3.5 px-4">ผู้ขอ / ผู้ถือใบอนุญาต</th>
-              <th scope="col" class="py-3.5 px-4">วันที่อนุญาต</th>
-              <th scope="col" class="py-3.5 px-4">วันที่หมดอายุ</th>
-              <th scope="col" class="py-3.5 px-4 text-center">สถานะ (คำนวณอัตโนมัติ)</th>
+              <th scope="col" class="py-3.5 px-4">ประเภท / หน่วยงานผู้ออก</th>
+              <th scope="col" class="py-3.5 px-4">สถานที่ / หมู่บ้าน</th>
+              <th scope="col" class="py-3.5 px-4">ผู้ถือใบอนุญาต</th>
+              <th scope="col" class="py-3.5 px-4">วันหมดอายุ</th>
+              <th scope="col" class="py-3.5 px-4 text-center">สถานะ</th>
               <th scope="col" class="py-3.5 px-4 text-center">เอกสาร</th>
               <th scope="col" class="py-3.5 px-4 text-center">จัดการ</th>
             </tr>
@@ -145,7 +145,7 @@
 
   <!-- Modal: Add / Edit Record -->
   <div id="recordModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white border border-slate-200 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
       <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
         <h3 id="modalTitle" class="text-lg font-bold text-slate-900">เพิ่มใบอนุญาตใหม่</h3>
         <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-200/50 transition-all">
@@ -156,31 +156,144 @@
         <input type="hidden" id="recordId">
         <input type="hidden" id="existingDocUrl">
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">เลขที่ใบอนุญาต <span class="text-rose-500">*</span></label>
-          <input type="text" id="licenseNo" required placeholder="เช่น LIC-2026-001" 
-                 class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อ / ประเภทใบอนุญาต <span class="text-rose-500">*</span></label>
-          <input type="text" id="licenseType" required placeholder="เช่น ใบอนุญาตประกอบกิจการ..." 
-                 class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
-        </div>
-
+        <!-- 1. เลขที่ใบอนุญาต & ลิงก์รูป/เอกสาร -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">ผู้ขอ / ผู้ถือใบอนุญาต <span class="text-rose-500">*</span></label>
-            <input type="text" id="applicantName" required placeholder="ชื่อ-นามสกุล / บริษัท" 
+            <label class="block text-xs font-semibold text-slate-700 mb-1">เลขที่ใบอนุญาต <span class="text-rose-500">*</span></label>
+            <input type="text" id="licenseNo" required placeholder="เช่น LIC-2026-001" 
                    class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">หน่วยงานที่ผู้ออก</label>
-            <input type="text" id="issuingAuthority" placeholder="เช่น อบต.ท่าก๊อ / กรมช่าง" 
+            <label class="block text-xs font-semibold text-slate-700 mb-1">เตือนก่อนหมดอายุ (วัน)</label>
+            <input type="number" id="remindDays" value="30" min="1" 
                    class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
           </div>
         </div>
 
+        <!-- 2. ชื่อ/ประเภทใบอนุญาต & หน่วยงานผู้ออก -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อ / ประเภทใบอนุญาต <span class="text-rose-500">*</span></label>
+            <select id="licenseTypeSelect" onchange="toggleCustomInput('licenseTypeSelect', 'licenseTypeCustomContainer')" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none mb-2">
+              <option value="กรมทรัพยากรน้ำบาดาล">กรมทรัพยากรน้ำบาดาล</option>
+              <option value="กรมเจ้าท่า">กรมเจ้าท่า</option>
+              <option value="กรมอุทยานแห่งชาติ">กรมอุทยานแห่งชาติ</option>
+              <option value="__CUSTOM__">+ เพิ่มประเภทอื่นๆ...</option>
+            </select>
+            <div id="licenseTypeCustomContainer" class="hidden">
+              <input type="text" id="licenseTypeCustom" placeholder="พิมพ์ชื่อประเภทใบอนุญาตใหม่..." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">หน่วยงานที่ผู้ออก <span class="text-rose-500">*</span></label>
+            <select id="issuingAuthoritySelect" onchange="toggleCustomInput('issuingAuthoritySelect', 'issuingAuthorityCustomContainer')" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none mb-2">
+              <option value="กรมทรัพยากรน้ำบาดาล">กรมทรัพยากรน้ำบาดาล</option>
+              <option value="กรมเจ้าท่า">กรมเจ้าท่า</option>
+              <option value="กรมอุทยานแห่งชาติ">กรมอุทยานแห่งชาติ</option>
+              <option value="__CUSTOM__">+ เพิ่มหน่วยงานอื่นๆ...</option>
+            </select>
+            <div id="issuingAuthorityCustomContainer" class="hidden">
+              <input type="text" id="issuingAuthorityCustom" placeholder="พิมพ์ชื่อหน่วยงานใหม่..." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. ผู้ขอ / ผู้ถือใบอนุญาต -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">ผู้ขอ / ผู้ถือใบอนุญาต <span class="text-rose-500">*</span></label>
+          <select id="applicantNameSelect" onchange="toggleCustomInput('applicantNameSelect', 'applicantNameCustomContainer')" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none mb-2">
+            <option value="องค์การบริหารส่วนตำบลท่าก๊อ">องค์การบริหารส่วนตำบลท่าก๊อ</option>
+            <option value="__CUSTOM__">+ เพิ่มผู้ขอ/ผู้ถือใหม่...</option>
+          </select>
+          <div id="applicantNameCustomContainer" class="hidden">
+            <input type="text" id="applicantNameCustom" placeholder="พิมพ์ชื่อผู้ขอ/ผู้ถือใบอนุญาต..." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- 4. อัตราค่าธรรมเนียม -->
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+          <label class="block text-xs font-semibold text-slate-700">อัตราค่าธรรมเนียม</label>
+          <div class="flex items-center gap-6">
+            <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+              <input type="radio" name="hasFee" value="no" checked onchange="toggleFeeInput()" class="text-blue-900 focus:ring-blue-900">
+              <span>ไม่มี</span>
+            </label>
+            <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+              <input type="radio" name="hasFee" value="yes" onchange="toggleFeeInput()" class="text-blue-900 focus:ring-blue-900">
+              <span>มี</span>
+            </label>
+            <div id="feeAmountContainer" class="hidden flex-1">
+              <input type="number" id="feeAmount" step="0.01" placeholder="จำนวนเงิน (บาท)" class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. ที่ตั้ง / หมู่บ้าน / ตำบล / อำเภอ / จังหวัด -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">หมู่บ้าน / หมู่ที่ <span class="text-rose-500">*</span></label>
+            <select id="villageNo" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+              <option value="">-- เลือกหมู่บ้าน --</option>
+              <option value="หมู่ที่ 1 บ้านดินดำ">หมู่ที่ 1 บ้านดินดำ</option>
+              <option value="หมู่ที่ 2 บ้านป่าถ่อน">หมู่ที่ 2 บ้านป่าถ่อน</option>
+              <option value="หมู่ที่ 3 บ้านป่าลั่น">หมู่ที่ 3 บ้านป่าลั่น</option>
+              <option value="หมู่ที่ 4 บ้านแม่ต่ำ">หมู่ที่ 4 บ้านแม่ต่ำ</option>
+              <option value="หมู่ที่ 5 บ้านสบก๊อ">หมู่ที่ 5 บ้านสบก๊อ</option>
+              <option value="หมู่ที่ 6 บ้านท่าก๊อพลับพลา">หมู่ที่ 6 บ้านท่าก๊อพลับพลา</option>
+              <option value="หมู่ที่ 7 บ้านโฮ่ง">หมู่ที่ 7 บ้านโฮ่ง</option>
+              <option value="หมู่ที่ 8 บ้านปางหลวง">หมู่ที่ 8 บ้านปางหลวง</option>
+              <option value="หมู่ที่ 9 บ้านปางน้ำฮ้าย">หมู่ที่ 9 บ้านปางน้ำฮ้าย</option>
+              <option value="หมู่ที่ 10 บ้านดอนชัย">หมู่ที่ 10 บ้านดอนชัย</option>
+              <option value="หมู่ที่ 11 บ้านแม่ผักแหละ">หมู่ที่ 11 บ้านแม่ผักแหละ</option>
+              <option value="หมู่ที่ 12 บ้านหล่ายลาว">หมู่ที่ 12 บ้านหล่ายลาว</option>
+              <option value="หมู่ที่ 13 บ้านสันมะแฟน">หมู่ที่ 13 บ้านสันมะแฟน</option>
+              <option value="หมู่ที่ 14 บ้านป่าเหียง">หมู่ที่ 14 บ้านป่าเหียง</option>
+              <option value="หมู่ที่ 15 บ้านดอยงาม">หมู่ที่ 15 บ้านดอยงาม</option>
+              <option value="หมู่ที่ 16 บ้านห้วยน้ำขุ่น">หมู่ที่ 16 บ้านห้วยน้ำขุ่น</option>
+              <option value="หมู่ที่ 17 บ้านห้วยชมภู">หมู่ที่ 17 บ้านห้วยชมภู</option>
+              <option value="หมู่ที่ 18 บ้านป่าเกี๊ยะ">หมู่ที่ 18 บ้านป่าเกี๊ยะ</option>
+              <option value="หมู่ที่ 19 บ้านบาหรา">หมู่ที่ 19 บ้านบาหรา</option>
+              <option value="หมู่ที่ 20 บ้านผาต้าย">หมู่ที่ 20 บ้านผาต้าย</option>
+              <option value="หมู่ที่ 21 บ้านชัยมงคล">หมู่ที่ 21 บ้านชัยมงคล</option>
+              <option value="หมู่ที่ 22 บ้านร่มโพธิ์ทอง">หมู่ที่ 22 บ้านร่มโพธิ์ทอง</option>
+              <option value="หมู่ที่ 23 บ้านลอจอ">หมู่ที่ 23 บ้านลอจอ</option>
+              <option value="หมู่ที่ 24 บ้านแม่ต่ำน้อย">หมู่ที่ 24 บ้านแม่ต่ำน้อย</option>
+              <option value="หมู่ที่ 25 บ้านพนาเสรี">หมู่ที่ 25 บ้านพนาเสรี</option>
+              <option value="หมู่ที่ 26 บ้านใหม่สุขสรรค์">หมู่ที่ 26 บ้านใหม่สุขสรรค์</option>
+              <option value="หมู่ที่ 27 บ้านดอนแก้ว">หมู่ที่ 27 บ้านดอนแก้ว</option>
+              <option value="หมู่ที่ 28 บ้านใหม่จะคะ">หมู่ที่ 28 บ้านใหม่จะคะ</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อสถานที่ (ถ้ามี)</label>
+            <input type="text" id="locationName" placeholder="เช่น โรงสูบน้ำ / ศูนย์พัฒนาเด็กเล็ก" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
+          <div><span class="text-slate-500">ตำบล:</span> <strong class="text-slate-800">ท่าก๊อ</strong></div>
+          <div><span class="text-slate-500">อำเภอ:</span> <strong class="text-slate-800">แม่สรวย</strong></div>
+          <div><span class="text-slate-500">จังหวัด:</span> <strong class="text-slate-800">เชียงราย</strong></div>
+        </div>
+
+        <!-- 6. กิจกรรมที่อนุญาต, วิธีดำเนินการ, เงื่อนไข -->
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">กิจกรรมที่อนุญาต</label>
+            <input type="text" id="permittedActivity" placeholder="เช่น เจาะบ่อน้ำบาดาลเพื่อการอุปโภคบริโภค" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">วิธีดำเนินการ</label>
+            <input type="text" id="operationMethod" placeholder="ระบุวิธีดำเนินการ..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">เงื่อนไขแนบท้าย</label>
+            <input type="text" id="conditions" placeholder="ระบุเงื่อนไข..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- 7. วันที่อนุญาต & วันที่หมดอายุ -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">วันที่อนุญาต / ออก <span class="text-rose-500">*</span></label>
@@ -196,7 +309,7 @@
 
         <!-- Dynamic Calculated Status Preview -->
         <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
-          <span class="text-xs text-slate-600 font-medium">สถานะที่จะถูกคำนวณ:</span>
+          <span class="text-xs text-slate-600 font-medium">สถานะคำนวณอัตโนมัติ:</span>
           <span id="autoStatusBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700">
             โปรดเลือกวันที่
           </span>
@@ -280,8 +393,30 @@
       }, 200);
     });
 
-    // Compute Auto Status Logic
-    function getAutoStatus(issueDateStr, expiryDateStr) {
+    // Custom Input Helper Toggle
+    function toggleCustomInput(selectId, customContainerId) {
+      const select = document.getElementById(selectId);
+      const container = document.getElementById(customContainerId);
+      if (select.value === '__CUSTOM__') {
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+      }
+    }
+
+    // Toggle Fee Amount Input
+    function toggleFeeInput() {
+      const hasFee = document.querySelector('input[name="hasFee"]:checked').value;
+      const feeContainer = document.getElementById('feeAmountContainer');
+      if (hasFee === 'yes') {
+        feeContainer.classList.remove('hidden');
+      } else {
+        feeContainer.classList.add('hidden');
+      }
+    }
+
+    // Auto Status Logic based on remind_days
+    function getAutoStatus(issueDateStr, expiryDateStr, remindDaysVal = 30) {
       if (!issueDateStr || !expiryDateStr) return { code: 'pending', text: 'รอดำเนินการ', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200' };
 
       const now = new Date();
@@ -293,13 +428,14 @@
       const expDate = new Date(expiryDateStr);
       expDate.setHours(0,0,0,0);
 
-      const in30Days = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+      const remindDays = parseInt(remindDaysVal) || 30;
+      const alertWindow = new Date(now.getTime() + (remindDays * 24 * 60 * 60 * 1000));
 
       if (now < issueDate) {
         return { code: 'pending', text: 'รอดำเนินการ', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200' };
       } else if (now > expDate) {
         return { code: 'expired', text: 'หมดอายุ', badgeClass: 'bg-rose-100 text-rose-800 border-rose-200' };
-      } else if (expDate <= in30Days) {
+      } else if (expDate <= alertWindow) {
         return { code: 'expiring', text: 'ใกล้หมดอายุ', badgeClass: 'bg-amber-100 text-amber-800 border-amber-200' };
       } else {
         return { code: 'active', text: 'ใช้งานปกติ', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
@@ -309,6 +445,7 @@
     function calculateAutoStatusPreview() {
       const issue = document.getElementById('issueDate').value;
       const expiry = document.getElementById('expiryDate').value;
+      const remindDays = document.getElementById('remindDays').value;
       const badge = document.getElementById('autoStatusBadge');
 
       if (!issue || !expiry) {
@@ -317,7 +454,7 @@
         return;
       }
 
-      const st = getAutoStatus(issue, expiry);
+      const st = getAutoStatus(issue, expiry, remindDays);
       badge.className = `text-xs font-semibold px-2.5 py-1 rounded-full border ${st.badgeClass}`;
       badge.innerText = st.text;
     }
@@ -350,7 +487,7 @@
       let active = 0, expiring = 0, expired = 0;
 
       data.forEach(item => {
-        const st = getAutoStatus(item.issue_date, item.expiry_date);
+        const st = getAutoStatus(item.issue_date, item.expiry_date, item.remind_days);
         if (st.code === 'active') active++;
         else if (st.code === 'expiring') expiring++;
         else if (st.code === 'expired') expired++;
@@ -375,12 +512,8 @@
       }
 
       tbody.innerHTML = data.map(item => {
-        const st = getAutoStatus(item.issue_date, item.expiry_date);
+        const st = getAutoStatus(item.issue_date, item.expiry_date, item.remind_days);
         const badgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${st.badgeClass}">${st.text}</span>`;
-
-        const issueText = item.issue_date 
-          ? new Date(item.issue_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
-          : '-';
 
         const expiryText = item.expiry_date 
           ? new Date(item.expiry_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -389,9 +522,15 @@
         return `
           <tr class="hover:bg-slate-50 transition-colors">
             <td class="py-3 px-4 font-mono font-semibold text-slate-900">${item.license_no}</td>
-            <td class="py-3 px-4 text-slate-800 font-medium">${item.license_type}</td>
+            <td class="py-3 px-4">
+              <div class="font-medium text-slate-800">${item.license_type}</div>
+              <div class="text-xs text-slate-400">${item.issuing_authority || '-'}</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="text-slate-800 font-medium">${item.village_no || '-'}</div>
+              <div class="text-xs text-slate-400">${item.location_name || ''}</div>
+            </td>
             <td class="py-3 px-4 text-slate-700">${item.applicant_name}</td>
-            <td class="py-3 px-4 text-xs font-mono">${issueText}</td>
             <td class="py-3 px-4 text-xs font-mono">${expiryText}</td>
             <td class="py-3 px-4 text-center">${badgeHtml}</td>
             <td class="py-3 px-4 text-center">
@@ -426,13 +565,14 @@
         const matchesSearch = 
           (item.license_no && item.license_no.toLowerCase().includes(search)) ||
           (item.license_type && item.license_type.toLowerCase().includes(search)) ||
+          (item.village_no && item.village_no.toLowerCase().includes(search)) ||
           (item.applicant_name && item.applicant_name.toLowerCase().includes(search));
 
         if (!matchesSearch) return false;
 
         if (statusFilter === 'all') return true;
 
-        const st = getAutoStatus(item.issue_date, item.expiry_date);
+        const st = getAutoStatus(item.issue_date, item.expiry_date, item.remind_days);
         return st.code === statusFilter;
       });
 
@@ -449,11 +589,14 @@
       document.getElementById('licenseForm').reset();
       document.getElementById('recordId').value = '';
       document.getElementById('existingDocUrl').value = '';
+      document.getElementById('licenseTypeCustomContainer').classList.add('hidden');
+      document.getElementById('issuingAuthorityCustomContainer').classList.add('hidden');
+      document.getElementById('applicantNameCustomContainer').classList.add('hidden');
+      document.getElementById('feeAmountContainer').classList.add('hidden');
       document.getElementById('fileStatusText').innerText = 'รองรับไฟล์เอกสาร PDF และรูปภาพขนาดไม่เกิน 5MB';
       calculateAutoStatusPreview();
     }
 
-    // Helper Convert File to Base64
     function fileToBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -473,7 +616,6 @@
       const fileInput = document.getElementById('fileInput');
       let documentUrl = document.getElementById('existingDocUrl').value;
 
-      // Handle File Upload if selected
       if (fileInput.files && fileInput.files[0]) {
         const file = fileInput.files[0];
         if (file.size > 5 * 1024 * 1024) {
@@ -489,16 +631,41 @@
         }
       }
 
+      // Value extraction
+      const licenseTypeSelect = document.getElementById('licenseTypeSelect').value;
+      const licenseType = licenseTypeSelect === '__CUSTOM__' ? document.getElementById('licenseTypeCustom').value.trim() : licenseTypeSelect;
+
+      const issuingAuthoritySelect = document.getElementById('issuingAuthoritySelect').value;
+      const issuingAuthority = issuingAuthoritySelect === '__CUSTOM__' ? document.getElementById('issuingAuthorityCustom').value.trim() : issuingAuthoritySelect;
+
+      const applicantNameSelect = document.getElementById('applicantNameSelect').value;
+      const applicantName = applicantNameSelect === '__CUSTOM__' ? document.getElementById('applicantNameCustom').value.trim() : applicantNameSelect;
+
+      const hasFee = document.querySelector('input[name="hasFee"]:checked').value;
+      const feeAmount = hasFee === 'yes' ? (parseFloat(document.getElementById('feeAmount').value) || 0) : 0;
+
       const issueDate = document.getElementById('issueDate').value;
       const expiryDate = document.getElementById('expiryDate').value;
-      const autoStatus = getAutoStatus(issueDate, expiryDate).code;
+      const remindDays = parseInt(document.getElementById('remindDays').value) || 30;
+      const autoStatus = getAutoStatus(issueDate, expiryDate, remindDays).code;
 
       const payload = {
-        control_no: document.getElementById('licenseNo').value.trim(), // Reuse license_no for control_no column compatibility
+        control_no: document.getElementById('licenseNo').value.trim(),
         license_no: document.getElementById('licenseNo').value.trim(),
-        license_type: document.getElementById('licenseType').value.trim(),
-        applicant_name: document.getElementById('applicantName').value.trim(),
-        issuing_authority: document.getElementById('issuingAuthority').value.trim(),
+        remind_days: remindDays,
+        license_type: licenseType,
+        issuing_authority: issuingAuthority,
+        applicant_name: applicantName,
+        has_fee: hasFee,
+        fee_amount: feeAmount,
+        village_no: document.getElementById('villageNo').value,
+        location_name: document.getElementById('locationName').value.trim(),
+        subdistrict: 'ท่าก๊อ',
+        district: 'แม่สรวย',
+        province: 'เชียงราย',
+        permitted_activity: document.getElementById('permittedActivity').value.trim(),
+        operation_method: document.getElementById('operationMethod').value.trim(),
+        conditions: document.getElementById('conditions').value.trim(),
         issue_date: issueDate || null,
         expiry_date: expiryDate || null,
         status: autoStatus,
@@ -535,16 +702,57 @@
 
       document.getElementById('recordId').value = item.id;
       document.getElementById('licenseNo').value = item.license_no || '';
-      document.getElementById('licenseType').value = item.license_type || '';
-      document.getElementById('applicantName').value = item.applicant_name || '';
-      document.getElementById('issuingAuthority').value = item.issuing_authority || '';
+      document.getElementById('remindDays').value = item.remind_days || 30;
+
+      // Dropdown preset logic
+      const lTypes = ['กรมทรัพยากรน้ำบาดาล', 'กรมเจ้าท่า', 'กรมอุทยานแห่งชาติ'];
+      if (lTypes.includes(item.license_type)) {
+        document.getElementById('licenseTypeSelect').value = item.license_type;
+      } else {
+        document.getElementById('licenseTypeSelect').value = '__CUSTOM__';
+        document.getElementById('licenseTypeCustom').value = item.license_type || '';
+        document.getElementById('licenseTypeCustomContainer').classList.remove('hidden');
+      }
+
+      if (lTypes.includes(item.issuing_authority)) {
+        document.getElementById('issuingAuthoritySelect').value = item.issuing_authority;
+      } else {
+        document.getElementById('issuingAuthoritySelect').value = '__CUSTOM__';
+        document.getElementById('issuingAuthorityCustom').value = item.issuing_authority || '';
+        document.getElementById('issuingAuthorityCustomContainer').classList.remove('hidden');
+      }
+
+      if (item.applicant_name === 'องค์การบริหารส่วนตำบลท่าก๊อ') {
+        document.getElementById('applicantNameSelect').value = item.applicant_name;
+      } else {
+        document.getElementById('applicantNameSelect').value = '__CUSTOM__';
+        document.getElementById('applicantNameCustom').value = item.applicant_name || '';
+        document.getElementById('applicantNameCustomContainer').classList.remove('hidden');
+      }
+
+      // Fee radio logic
+      if (item.has_fee === 'yes') {
+        document.querySelector('input[name="hasFee"][value="yes"]').checked = true;
+        document.getElementById('feeAmount').value = item.fee_amount || 0;
+        document.getElementById('feeAmountContainer').classList.remove('hidden');
+      } else {
+        document.querySelector('input[name="hasFee"][value="no"]').checked = true;
+        document.getElementById('feeAmountContainer').classList.add('hidden');
+      }
+
+      document.getElementById('villageNo').value = item.village_no || '';
+      document.getElementById('locationName').value = item.location_name || '';
+      document.getElementById('permittedActivity').value = item.permitted_activity || '';
+      document.getElementById('operationMethod').value = item.operation_method || '';
+      document.getElementById('conditions').value = item.conditions || '';
+
       document.getElementById('issueDate').value = item.issue_date || '';
       document.getElementById('expiryDate').value = item.expiry_date || '';
       document.getElementById('existingDocUrl').value = item.document_url || '';
       document.getElementById('remarks').value = item.remarks || '';
 
       if (item.document_url) {
-        document.getElementById('fileStatusText').innerText = 'มีไฟล์แนบเดิมอยู่ในระบบแล้ว (หากต้องการเปลี่ยน ให้เลือกไฟล์ใหม่ด้านบน)';
+        document.getElementById('fileStatusText').innerText = 'มีไฟล์แนบเดิมอยู่ในระบบแล้ว (เลือกไฟล์ใหม่หากต้องการเปลี่ยน)';
       }
 
       calculateAutoStatusPreview();
