@@ -6,7 +6,7 @@
   <title>ระบบทะเบียนคุมใบอนุญาต - อบต.ท่าก๊อ</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS Client CDN (Standalone UMD) -->
+  <!-- Supabase JS Client CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <!-- Google Fonts: Prompt & Sarabun -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,7 +36,7 @@
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col selection:bg-blue-900 selection:text-white">
 
-  <!-- Top Announcement / System Banner -->
+  <!-- System Banner -->
   <div class="bg-slate-900 text-slate-300 text-xs py-1.5 px-4 text-center font-light border-b border-slate-800">
     <span class="inline-flex items-center gap-1.5">
       <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -55,16 +55,23 @@
         </div>
         <div>
           <h1 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-tight">License Master Register</h1>
-          <p class="text-xs text-slate-500 font-light">ระบบควบคุมสถานะและจัดเก็บใบอนุญาตดิจิทัล</p>
+          <p class="text-xs text-slate-500 font-light">ระบบทะเบียนคุมและจัดเก็บใบอนุญาตดิจิทัล</p>
         </div>
       </div>
 
       <!-- Header Controls -->
       <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+        <!-- Open GDrive Folder Quick Link -->
+        <a href="https://drive.google.com/drive/folders/1W2vo1TpBiRZyO6TH_Ig3itDfu2UAuqb6" target="_blank" rel="noopener noreferrer" 
+           class="px-3.5 py-2 border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium rounded-xl text-xs flex items-center gap-1.5 transition-all font-heading">
+          <i data-lucide="folder-open" class="w-3.5 h-3.5 text-amber-600"></i>
+          <span>คลัง Google Drive</span>
+        </a>
+
         <!-- Admin Toggle Button -->
-        <button id="adminAuthBtn" onclick="toggleAdminAuth()" class="px-4 py-2 border border-slate-200 hover:border-slate-300 bg-white text-slate-700 font-medium rounded-xl text-xs flex items-center gap-2 transition-all shadow-sm active:scale-95">
+        <button id="adminAuthBtn" onclick="toggleAdminAuth()" class="px-4 py-2 border border-slate-200 hover:border-slate-300 bg-white text-slate-700 font-medium rounded-xl text-xs flex items-center gap-2 transition-all shadow-sm active:scale-95 font-heading">
           <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
-          <span id="adminBtnText" class="font-heading">เข้าสู่ระบบ Admin</span>
+          <span id="adminBtnText">เข้าสู่ระบบ Admin</span>
         </button>
 
         <!-- New License Add Button (Admin Only) -->
@@ -377,12 +384,16 @@
           </span>
         </div>
 
-        <!-- File / Drive Document Input -->
-        <div class="space-y-2">
-          <label class="block font-semibold text-slate-700 font-heading">ลิงก์เอกสาร Google Drive หรือ URL เอกสาร</label>
-          <input type="url" id="documentUrlInput" placeholder="วางลิงก์ Google Drive..." 
-                 class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
-          <p class="text-[11px] text-slate-400 font-light">แนะนำให้นำไฟล์ไปจัดเก็บใน Google Drive Folder และวางลิงก์แบบเปิดสิทธิ์แชร์ไว้ที่นี่ครับ</p>
+        <!-- Direct File Upload to Google Drive via GAS -->
+        <div class="space-y-2 p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl">
+          <label class="block font-semibold text-slate-700 font-heading">แนบไฟล์เอกสาร / รูปภาพ (อัปโหลดเข้า Google Drive อบต. อัตโนมัติ)</label>
+          <input type="file" id="fileInput" accept="application/pdf,image/*" 
+                 class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-900 file:text-white hover:file:bg-blue-800 cursor-pointer border border-slate-200 rounded-xl p-1 bg-white">
+          <div class="relative">
+            <input type="url" id="documentUrlInput" placeholder="หรือวางลิงก์ Google Drive ลอย..." 
+                   class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
+          </div>
+          <p id="uploadStatusText" class="text-[11px] text-slate-500 font-light">ไฟล์จะถูกส่งไปสร้างโฟลเดอร์แยกตามประเภทใบอนุญาตใน Google Drive [1W2vo1TpBiRZyO6TH_Ig3itDfu2UAuqb6] อัตโนมัติ</p>
         </div>
 
         <div>
@@ -422,6 +433,7 @@
   <script>
     const SUPABASE_URL = "https://rqzmufywsqpbbxmddlf.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxem11Znl3c3FwYmJ4bWRhbGRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NTAwMzYsImV4cCI6MjEwNTUyNjAzNn0.XJ5B_X-8azEA-oRJ54trMyRspaBmr5WZFYB9U0kzn68";
+    const GAS_UPLOADER_URL = "https://script.google.com/macros/s/AKfycbx7CgwOiuS3sTU4act-68LrWhkkWCNpP_EevAGtAfUhz1CGT7oAQYgj85S3m_fnPwK43Q/exec";
     const ADMIN_PASS_HASH = "1234"; 
 
     let db;
@@ -712,7 +724,18 @@
       document.getElementById('issuingAuthorityCustomContainer').classList.add('hidden');
       document.getElementById('applicantNameCustomContainer').classList.add('hidden');
       document.getElementById('feeAmountContainer').classList.add('hidden');
+      document.getElementById('uploadStatusText').innerText = 'ไฟล์จะถูกส่งไปสร้างโฟลเดอร์แยกตามประเภทใบอนุญาตใน Google Drive [1W2vo1TpBiRZyO6TH_Ig3itDfu2UAuqb6] อัตโนมัติ';
       calculateAutoStatusPreview();
+    }
+
+    // Helper Base64
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
     }
 
     async function handleFormSubmit(e) {
@@ -723,12 +746,16 @@
       }
 
       const saveBtn = document.getElementById('saveBtn');
+      const uploadStatus = document.getElementById('uploadStatusText');
       saveBtn.disabled = true;
-      saveBtn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> บันทึก...`;
+      saveBtn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> กำลังบันทึกข้อมูล...`;
 
       const id = document.getElementById('recordId').value;
-      const documentUrl = document.getElementById('documentUrlInput').value.trim() || document.getElementById('existingDocUrl').value;
+      let documentUrl = document.getElementById('documentUrlInput').value.trim() || document.getElementById('existingDocUrl').value;
 
+      const licenseNo = document.getElementById('licenseNo').value.trim();
+      const villageNo = document.getElementById('villageNo').value;
+      
       const licenseTypeSelect = document.getElementById('licenseTypeSelect').value;
       const licenseType = licenseTypeSelect === '__CUSTOM__' ? document.getElementById('licenseTypeCustom').value.trim() : licenseTypeSelect;
 
@@ -737,6 +764,43 @@
 
       const applicantNameSelect = document.getElementById('applicantNameSelect').value;
       const applicantName = applicantNameSelect === '__CUSTOM__' ? document.getElementById('applicantNameCustom').value.trim() : applicantNameSelect;
+
+      // File Upload to Google Drive Flow
+      const fileInput = document.getElementById('fileInput');
+      if (fileInput.files && fileInput.files[0]) {
+        uploadStatus.innerText = "⏳ กำลังสร้างโฟลเดอร์และอัปโหลดไฟล์ไปที่ Google Drive อบต...";
+        uploadStatus.className = "text-[11px] text-blue-600 font-medium animate-pulse";
+
+        try {
+          const file = fileInput.files[0];
+          const base64Data = await fileToBase64(file);
+          const fileExt = file.name.split('.').pop();
+          const stdFileName = `${licenseNo}_${villageNo}_${licenseType}.${fileExt}`;
+
+          const driveRes = await fetch(GAS_UPLOADER_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+              fileData: base64Data,
+              fileName: stdFileName,
+              mimeType: file.type,
+              category: licenseType
+            })
+          });
+
+          const result = await driveRes.json();
+          if (result.status === 'success') {
+            documentUrl = result.fileUrl;
+          } else {
+            throw new Error(result.message || 'ไม่สามารถอัปโหลดเข้า Drive ได้');
+          }
+        } catch (uploadErr) {
+          console.error("Drive Upload Error:", uploadErr);
+          alert("ไม่สามารถอัปโหลดไฟล์เข้า Google Drive ได้: " + uploadErr.message);
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> บันทึกข้อมูล`;
+          return;
+        }
+      }
 
       const hasFee = document.querySelector('input[name="hasFee"]:checked').value;
       const feeAmount = hasFee === 'yes' ? (parseFloat(document.getElementById('feeAmount').value) || 0) : 0;
@@ -747,15 +811,15 @@
       const autoStatus = getAutoStatus(issueDate, expiryDate, remindDays).code;
 
       const payload = {
-        control_no: document.getElementById('licenseNo').value.trim(),
-        license_no: document.getElementById('licenseNo').value.trim(),
+        control_no: licenseNo,
+        license_no: licenseNo,
         remind_days: remindDays,
         license_type: licenseType,
         issuing_authority: issuingAuthority,
         applicant_name: applicantName,
         has_fee: hasFee,
         fee_amount: feeAmount,
-        village_no: document.getElementById('villageNo').value,
+        village_no: villageNo,
         location_name: document.getElementById('locationName').value.trim(),
         subdistrict: 'ท่าก๊อ',
         district: 'แม่สรวย',
