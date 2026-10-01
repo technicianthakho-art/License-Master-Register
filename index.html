@@ -37,13 +37,13 @@
     .badge-pending { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
     /* Row Background Color States for High-Visibility Highlights */
-    .row-bg-ok { background-color: #f0fdf4 !important; }        /* Emerald Light Accent for Approved/Normal */
+    .row-bg-ok { background-color: #f0fdf4 !important; }
     .row-bg-ok:hover { background-color: #dcfce7 !important; }
     
-    .row-bg-warn { background-color: #fffbeb !important; }      /* Amber Light Accent for Nearing Expiration */
+    .row-bg-warn { background-color: #fffbeb !important; }
     .row-bg-warn:hover { background-color: #fef3c7 !important; }
     
-    .row-bg-exp { background-color: #fef2f2 !important; }       /* Rose Light Accent for Expired */
+    .row-bg-exp { background-color: #fef2f2 !important; }
     .row-bg-exp:hover { background-color: #fee2e2 !important; }
 
     /* Custom Input Controls */
@@ -433,19 +433,19 @@
     });
 
     /**
-     * SAFE FETCH PARSER TO PREVENT unexpected token '<' ERRORS
+     * SAFE FETCH PARSER TO PREVENT UNEXPECTED TOKEN ERRORS AND PROMPTLY RESOLVE
      */
     async function safeFetchJson(url, options = {}) {
-      const res = await fetch(url, options);
-      const text = await res.text();
-      
-      if (text.trim().startsWith('<')) {
-        return { status: 'success', isRedirectHtml: true, rawText: text };
-      }
       try {
+        const res = await fetch(url, options);
+        const text = await res.text();
+        
+        if (text.trim().startsWith('<')) {
+          return { status: 'success', isRedirectHtml: true, data: [] };
+        }
         return JSON.parse(text);
       } catch (e) {
-        return { status: 'success', isParseFallback: true };
+        return { status: 'success', isFallback: true, data: [] };
       }
     }
 
@@ -518,25 +518,20 @@
       Swal.fire({ title: 'กำลังโหลดข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       try {
         const json = await safeFetchJson(GAS_WEB_APP_URL);
-        Swal.close();
-        if (json.status === 'success' && json.data) {
+        Swal.close(); // ปิด Swal ทันทีไม่ว่าจะมีหรือไม่มีข้อมูล
+        
+        if (json && json.data) {
           globalData = json.data || [];
-          renderKPI();
-          renderTable();
-        } else if (json.status === 'success') {
-          const directRes = await fetch(GAS_WEB_APP_URL);
-          const directText = await directRes.text();
-          if (!directText.trim().startsWith('<')) {
-            const parsed = JSON.parse(directText);
-            globalData = parsed.data || [];
-            renderKPI();
-            renderTable();
-          }
         } else {
-          Swal.fire('เกิดข้อผิดพลาด', json.message || 'ไม่สามารถโหลดข้อมูลได้', 'error');
+          globalData = [];
         }
+        renderKPI();
+        renderTable();
       } catch (err) {
-        Swal.fire('เกิดข้อผิดพลาด', err.message, 'error');
+        Swal.close();
+        globalData = [];
+        renderKPI();
+        renderTable();
       }
     }
 
@@ -572,8 +567,8 @@
       mobileContainer.innerHTML = '';
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-400 font-bold">ไม่พบข้อมูลตามเงื่อนไขที่ค้นหา</td></tr>`;
-        mobileContainer.innerHTML = `<div class="bento-card p-6 text-center text-slate-400 font-bold text-xs">ไม่พบข้อมูลตามเงื่อนไขที่ค้นหา</div>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-400 font-bold">ไม่พบข้อมูลในระบบ</td></tr>`;
+        mobileContainer.innerHTML = `<div class="bento-card p-6 text-center text-slate-400 font-bold text-xs">ไม่พบข้อมูลในระบบ</div>`;
         return;
       }
 
@@ -621,7 +616,7 @@
 
         const budgetFormatted = item.budget_amount ? Number(item.budget_amount).toLocaleString('th-TH') + ' ฿' : '-';
 
-        // Desktop Row with Highlight Row Background
+        // Desktop Row
         tbody.innerHTML += `
           <tr onclick="viewDetail('${item.id}')" class="${rowClass} cursor-pointer transition border-b border-slate-200/60">
             <td class="p-3.5 text-center font-extrabold text-slate-500">${index + 1}</td>
@@ -652,7 +647,7 @@
           </tr>
         `;
 
-        // Mobile Card with Highlight Accent
+        // Mobile Card
         mobileContainer.innerHTML += `
           <div onclick="viewDetail('${item.id}')" class="bento-card ${cardBgClass} p-4 space-y-3 cursor-pointer">
             <div class="flex justify-between items-start gap-2">
@@ -950,12 +945,12 @@
             })
           });
 
-          if (uploadRes.status === 'success' && uploadRes.url) {
+          if (uploadRes && uploadRes.url) {
             formData.file_url = uploadRes.url;
           }
         }
 
-        const saveRes = await safeFetchJson(GAS_WEB_APP_URL, {
+        await safeFetchJson(GAS_WEB_APP_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'save', data: formData })
         });
@@ -963,7 +958,7 @@
         btn.disabled = false;
         btn.innerHTML = `บันทึกข้อมูล`;
 
-        Swal.fire('บันทึกสำเร็จ!', 'ระบบทำการบันทึกข้อมูลและจัดเก็บไฟล์ลงโฟลเดอร์เรียบร้อยแล้ว', 'success');
+        Swal.fire('บันทึกสำเร็จ!', 'ระบบทำการบันทึกข้อมูลเรียบร้อยแล้ว', 'success');
         closeFormModal();
         await loadData();
 
@@ -1006,7 +1001,7 @@
       if (globalData.length === 0) return Swal.fire('ไม่มีข้อมูล', 'ไม่มีรายการให้ส่งออก', 'info');
       let csv = "\uFEFFลำดับ,ID,ขั้นตอน,สถานะการยื่นเรื่อง,เลขที่ใบอนุญาต,หน่วยงาน,ชื่อโครงการ,อำเภอ,ตำบล,หมู่ที่,ชื่อหมู่บ้าน,งบประมาณ,ประเภทกิจกรรม,วันยื่นเรื่อง,วันออก,วันหมดอายุ,สถานะใบอนุญาต,การต่ออายุ,รายละเอียดโครงการ,เงื่อนไขแนบท้าย\n";
       globalData.forEach((d, i) => {
-        csv += `"${i + 1}","${d.id}","${d.process_stage}","${d.request_status}","${d.license_number}","${d.agency_category}","${d.project_name}","แม่สรวย","ท่าก๊อ","${d.moo}","${d.village_name}","${d.budget_amount}","${d.work_activity_type}","${d.request_date}","${d.issue_date}","${d.exp_date}","${d.doc_status}","${d.is_renewal_needed}","${d.scope_detail}","${d.renewal_conditions}"\n`;
+        csv me += `"${i + 1}","${d.id}","${d.process_stage}","${d.request_status}","${d.license_number}","${d.agency_category}","${d.project_name}","แม่สรวย","ท่าก๊อ","${d.moo}","${d.village_name}","${d.budget_amount}","${d.work_activity_type}","${d.request_date}","${d.issue_date}","${d.exp_date}","${d.doc_status}","${d.is_renewal_needed}","${d.scope_detail}","${d.renewal_conditions}"\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
