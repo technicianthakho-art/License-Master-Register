@@ -616,6 +616,11 @@
 
         const budgetFormatted = item.budget_amount ? Number(item.budget_amount).toLocaleString('th-TH') + ' ฿' : '-';
 
+        // LOGIC FIX: DISPLAY CORRECT STAGE & STATUS SUBTITLE
+        const isApprovedStage = item.process_stage === 'ออกใบอนุญาตแล้ว';
+        const displayStageTitle = isApprovedStage ? escapeHtml(item.license_number || 'ได้รับอนุมัติแล้ว') : 'อยู่ระหว่างยื่นขอ';
+        const displayStageSub = isApprovedStage ? 'อนุมัติ / ออกใบอนุญาตแล้ว' : escapeHtml(item.request_status || 'อยู่ระหว่างจัดเตรียมเอกสาร');
+
         // Desktop Row
         tbody.innerHTML += `
           <tr onclick="viewDetail('${item.id}')" class="${rowClass} cursor-pointer transition border-b border-slate-200/60">
@@ -630,8 +635,8 @@
             </td>
             <td class="p-3.5 font-extrabold text-slate-900 text-xs">${budgetFormatted}</td>
             <td class="p-3.5">
-              <div class="font-black text-slate-900">${item.process_stage === 'ออกใบอนุญาตแล้ว' ? escapeHtml(item.license_number || '-') : 'อยู่ระหว่างยื่นขอ'}</div>
-              <div class="text-[11px] text-slate-600 font-bold mt-0.5">${escapeHtml(item.request_status || '-')}</div>
+              <div class="font-black text-slate-900">${displayStageTitle}</div>
+              <div class="text-[11px] text-slate-600 font-bold mt-0.5">${displayStageSub}</div>
             </td>
             <td class="p-3.5 text-xs">
               <div class="text-slate-600 font-semibold">ยื่น: ${item.request_date || '-'}</div>
@@ -708,7 +713,7 @@
           <div><span class="text-[11px] text-slate-500 font-extrabold block">งบประมาณโครงการ:</span> <strong class="text-indigo-700 text-base font-black">${budgetFormatted}</strong></div>
           <div><span class="text-[11px] text-slate-500 font-extrabold block">ขั้นตอนการทำงาน:</span> <strong class="text-indigo-600">${escapeHtml(item.process_stage)}</strong></div>
           <div><span class="text-[11px] text-slate-500 font-extrabold block mb-1">สถานะใบอนุญาต:</span> <span class="px-2.5 py-0.5 rounded-full text-xs font-black ${badgeClass}">${item.doc_status}</span></div>
-          <div><span class="text-[11px] text-slate-500 font-extrabold block">สถานะการยื่นเรื่อง:</span> <strong class="text-slate-900">${escapeHtml(item.request_status || '-')}</strong></div>
+          <div><span class="text-[11px] text-slate-500 font-extrabold block">สถานะการยื่นเรื่อง:</span> <strong class="text-slate-900">${item.process_stage === 'ออกใบอนุญาตแล้ว' ? 'อนุมัติ / ออกใบอนุญาตแล้ว' : escapeHtml(item.request_status || '-')}</strong></div>
           <div><span class="text-[11px] text-slate-500 font-extrabold block">เลขที่ใบอนุญาต:</span> <strong class="text-slate-900">${escapeHtml(item.license_number || '-')}</strong></div>
           <div><span class="text-[11px] text-slate-500 font-extrabold block">ประเภทกิจกรรม:</span> <strong class="text-slate-900">${escapeHtml(item.work_activity_type || '-')}</strong></div>
           <div><span class="text-[11px] text-slate-500 font-extrabold block">วันที่ยื่นขออนุญาต:</span> <strong class="text-slate-900">${item.request_date || '-'}</strong></div>
@@ -908,6 +913,7 @@
 
       const targetId = document.getElementById('field-id').value;
       const projectName = document.getElementById('field-project-name').value;
+      const processStage = document.getElementById('field-process-stage').value;
 
       const formData = {
         id: targetId,
@@ -919,8 +925,8 @@
         budget_amount: document.getElementById('field-budget-amount').value,
         scope_detail: document.getElementById('field-scope-detail').value,
         remark: document.getElementById('field-remark').value,
-        process_stage: document.getElementById('field-process-stage').value,
-        request_status: document.getElementById('field-request-status').value,
+        process_stage: processStage,
+        request_status: processStage === 'ออกใบอนุญาตแล้ว' ? 'อนุมัติ / ออกใบอนุญาตแล้ว' : document.getElementById('field-request-status').value,
         license_number: document.getElementById('field-license-number').value,
         request_date: document.getElementById('field-request-date').value,
         issue_date: document.getElementById('field-issue-date').value,
