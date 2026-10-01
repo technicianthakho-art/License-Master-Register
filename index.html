@@ -3,896 +3,386 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบทะเบียนคุมใบอนุญาต - อบต.ท่าก๊อ</title>
-  <!-- Tailwind CSS CDN -->
+  <title>ระบบทะเบียนคุมใบอนุญาต</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS Client CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <!-- Google Fonts: Prompt & Sarabun -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    body { font-family: 'Sarabun', sans-serif; background-color: #F8FAFC; color: #0F172A; }
-    h1, h2, h3, h4, .font-heading { font-family: 'Prompt', sans-serif; }
-    .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); }
-    .status-badge { font-family: 'Prompt', sans-serif; letter-spacing: 0.02em; }
+    body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; color: #0f172a; }
+    .bento-card { background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .badge-ok { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+    .badge-warn { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    .badge-exp { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .badge-pending { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
   </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col selection:bg-blue-900 selection:text-white">
+<body class="text-slate-900 antialiased min-h-screen flex flex-col">
 
-  <!-- System Banner -->
-  <div class="bg-slate-900 text-slate-300 text-xs py-1.5 px-4 text-center font-light border-b border-slate-800">
-    <span class="inline-flex items-center gap-1.5">
-      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-      ระบบทะเบียนคุมใบอนุญาต กองช่าง องค์การบริหารส่วนตำบลท่าก๊อ อ.แม่สรวย จ.เชียงราย
-    </span>
-  </div>
-
-  <!-- Header Navigation -->
-  <header class="bg-white/90 backdrop-blur-md sticky top-0 z-30 border-b border-slate-200/80 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-4">
-      
-      <div class="flex items-center gap-3.5 w-full sm:w-auto">
-        <div class="w-11 h-11 bg-gradient-to-br from-blue-900 to-indigo-900 text-white rounded-2xl flex items-center justify-center shadow-md shadow-blue-900/10">
-          <i data-lucide="file-check-2" class="w-6 h-6 text-blue-200"></i>
+  <!-- HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-md">
+          <i class="fa-solid fa-id-card text-lg"></i>
         </div>
         <div>
-          <h1 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-tight">License Master Register</h1>
-          <p class="text-xs text-slate-500 font-light">ระบบทะเบียนคุมและจัดเก็บใบอนุญาตดิจิทัล</p>
+          <h1 class="font-bold text-lg text-slate-900 leading-none">ระบบทะเบียนคุมใบอนุญาต</h1>
+          <p class="text-xs text-indigo-600 font-semibold mt-1">License Management System</p>
         </div>
       </div>
-
-      <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-        <button id="adminAuthBtn" onclick="toggleAdminAuth()" class="px-4 py-2 border border-slate-200 hover:border-slate-300 bg-white text-slate-700 font-medium rounded-xl text-xs flex items-center gap-2 transition-all shadow-sm active:scale-95 font-heading">
-          <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
-          <span id="adminBtnText">เข้าสู่ระบบ Admin</span>
-        </button>
-
-        <button id="addLicenseBtn" onclick="openModal()" class="hidden px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-medium rounded-xl text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md shadow-blue-900/20 active:scale-95 font-heading">
-          <i data-lucide="plus-circle" class="w-4 h-4 text-blue-200"></i>
-          เพิ่มใบอนุญาตใหม่
-        </button>
-      </div>
+      <button onclick="openFormModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
+        <i class="fa-solid fa-circle-plus"></i> เพิ่มใบอนุญาตใหม่
+      </button>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-    <!-- Summary Stats Grid -->
+    <!-- KPI CARDS -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="glass-card p-5 rounded-2xl shadow-sm hover:shadow-md transition-all">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-slate-500 font-heading uppercase tracking-wider">รายการทั้งหมด</span>
-          <span class="p-2 bg-slate-100 text-slate-600 rounded-xl"><i data-lucide="files" class="w-4 h-4"></i></span>
-        </div>
-        <div class="mt-3 flex items-baseline gap-2">
-          <h3 id="stat-total" class="text-3xl font-bold text-slate-900 font-heading">0</h3>
-          <span class="text-xs text-slate-400">ฉบับ</span>
-        </div>
+      <div class="bento-card p-4">
+        <p class="text-xs font-bold text-slate-500">ใบอนุญาตทั้งหมด</p>
+        <h3 id="kpi-total" class="text-2xl font-extrabold text-slate-900 mt-1">0</h3>
       </div>
-
-      <div class="glass-card p-5 rounded-2xl shadow-sm hover:shadow-md transition-all border-l-4 border-l-emerald-500">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-emerald-700 font-heading uppercase tracking-wider">ใช้งานปกติ</span>
-          <span class="p-2 bg-emerald-50 text-emerald-600 rounded-xl"><i data-lucide="check-circle-2" class="w-4 h-4"></i></span>
-        </div>
-        <div class="mt-3 flex items-baseline gap-2">
-          <h3 id="stat-active" class="text-3xl font-bold text-emerald-800 font-heading">0</h3>
-          <span class="text-xs text-emerald-600 font-light">รายการ</span>
-        </div>
+      <div class="bento-card p-4">
+        <p class="text-xs font-bold text-emerald-600">ยังไม่หมดอายุ</p>
+        <h3 id="kpi-ok" class="text-2xl font-extrabold text-emerald-600 mt-1">0</h3>
       </div>
-
-      <div class="glass-card p-5 rounded-2xl shadow-sm hover:shadow-md transition-all border-l-4 border-l-amber-500">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-amber-700 font-heading uppercase tracking-wider">ใกล้หมดอายุ</span>
-          <span class="p-2 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="clock" class="w-4 h-4"></i></span>
-        </div>
-        <div class="mt-3 flex items-baseline gap-2">
-          <h3 id="stat-expiring" class="text-3xl font-bold text-amber-800 font-heading">0</h3>
-          <span class="text-xs text-amber-600 font-light">รายการ</span>
-        </div>
+      <div class="bento-card p-4">
+        <p class="text-xs font-bold text-amber-600">ใกล้หมดอายุ (ภายใน 90 วัน)</p>
+        <h3 id="kpi-warn" class="text-2xl font-extrabold text-amber-600 mt-1">0</h3>
       </div>
-
-      <div class="glass-card p-5 rounded-2xl shadow-sm hover:shadow-md transition-all border-l-4 border-l-rose-500">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-rose-700 font-heading uppercase tracking-wider">หมดอายุแล้ว</span>
-          <span class="p-2 bg-rose-50 text-rose-600 rounded-xl"><i data-lucide="alert-circle" class="w-4 h-4"></i></span>
-        </div>
-        <div class="mt-3 flex items-baseline gap-2">
-          <h3 id="stat-expired" class="text-3xl font-bold text-rose-800 font-heading">0</h3>
-          <span class="text-xs text-rose-600 font-light">รายการ</span>
-        </div>
+      <div class="bento-card p-4">
+        <p class="text-xs font-bold text-rose-600">หมดอายุแล้ว</p>
+        <h3 id="kpi-exp" class="text-2xl font-extrabold text-rose-600 mt-1">0</h3>
       </div>
     </div>
 
-    <!-- Filter & Search Toolbar -->
-    <div class="glass-card p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-3 justify-between items-center">
-      <div class="relative w-full sm:w-96">
-        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <input type="text" id="searchInput" oninput="filterData()" placeholder="ค้นหาเลขที่ใบอนุญาต, หมู่บ้าน, ชื่อผู้ขอ..." 
-               class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 transition-all">
+    <!-- SEARCH & FILTER -->
+    <div class="bento-card p-4 flex flex-col md:flex-row gap-3 items-center justify-between">
+      <div class="relative w-full md:w-80">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+        <input type="text" id="search-input" oninput="renderTable()" placeholder="ค้นหาชื่อโครงการ / เลขที่ใบอนุญาต..." class="pl-9 pr-4 py-2 w-full border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
       </div>
-      <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-        <label for="statusFilter" class="text-xs font-medium text-slate-500 font-heading whitespace-nowrap">กรองสถานะ:</label>
-        <select id="statusFilter" onchange="filterData()" class="w-full sm:w-48 py-2 px-3 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 transition-all font-heading">
-          <option value="all">ทั้งหมด</option>
-          <option value="active">ใช้งานปกติ</option>
-          <option value="expiring">ใกล้หมดอายุ</option>
-          <option value="expired">หมดอายุแล้ว</option>
-          <option value="pending">รอดำเนินการ</option>
+      <div class="flex gap-2 w-full md:w-auto">
+        <select id="filter-agency" onchange="renderTable()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 w-full md:w-auto">
+          <option value="ALL">ทุกหน่วยงาน</option>
+          <option value="กรมทรัพยากรน้ำบาดาล">กรมทรัพยากรน้ำบาดาล</option>
+          <option value="กรมเจ้าท่า">กรมเจ้าท่า</option>
+          <option value="กรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช">กรมอุทยานแห่งชาติฯ</option>
+        </select>
+        <select id="filter-status" onchange="renderTable()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 w-full md:w-auto">
+          <option value="ALL">ทุกสถานะ</option>
+          <option value="ยังไม่หมดอายุ">🟢 ยังไม่หมดอายุ</option>
+          <option value="ใกล้หมดอายุ">🟡 ใกล้หมดอายุ</option>
+          <option value="หมดอายุแล้ว">🔴 หมดอายุแล้ว</option>
         </select>
       </div>
     </div>
 
-    <!-- Data Table Container -->
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+    <!-- TABLE -->
+    <div class="bento-card overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs sm:text-sm text-slate-700">
-          <thead class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-semibold uppercase text-slate-500 font-heading tracking-wider">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-100 border-b border-slate-200 text-slate-700 font-extrabold uppercase">
             <tr>
-              <th scope="col" class="py-3.5 px-4">เลขที่ใบอนุญาต</th>
-              <th scope="col" class="py-3.5 px-4">ประเภท / หน่วยงานผู้ออก</th>
-              <th scope="col" class="py-3.5 px-4">สถานที่ / หมู่บ้าน</th>
-              <th scope="col" class="py-3.5 px-4">ผู้ถือใบอนุญาต</th>
-              <th scope="col" class="py-3.5 px-4">วันหมดอายุ</th>
-              <th scope="col" class="py-3.5 px-4 text-center">สถานะ</th>
-              <th scope="col" class="py-3.5 px-4 text-center">เอกสาร</th>
-              <th scope="col" class="py-3.5 px-4 text-center admin-only hidden">จัดการ</th>
+              <th class="p-3.5">เลขที่ / หน่วยงาน</th>
+              <th class="p-3.5">ชื่อโครงการ / สถานที่</th>
+              <th class="p-3.5">ประเภทกิจกรรม</th>
+              <th class="p-3.5">วันที่ออก -> หมดอายุ</th>
+              <th class="p-3.5 text-center">สถานะ</th>
+              <th class="p-3.5">การต่ออายุ / เงื่อนไข</th>
+              <th class="p-3.5 text-center">เอกสาร</th>
+              <th class="p-3.5 text-center">จัดการ</th>
             </tr>
           </thead>
-          <tbody id="tableBody" class="divide-y divide-slate-100">
-            <tr>
-              <td colspan="8" class="py-16 text-center text-slate-400">
-                <div class="flex flex-col items-center justify-center gap-2">
-                  <div class="w-6 h-6 border-2 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
-                  <span class="text-xs font-light">กำลังโหลดข้อมูลทะเบียนคุม...</span>
-                </div>
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="table-body" class="divide-y divide-slate-100 font-medium"></tbody>
         </table>
       </div>
     </div>
   </main>
 
-  <!-- Admin Login Modal -->
-  <div id="adminLoginModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden p-6 space-y-4 border border-slate-100">
-      <div class="text-center space-y-1.5">
-        <div class="w-12 h-12 bg-blue-50 text-blue-900 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-blue-100">
-          <i data-lucide="shield-check" class="w-6 h-6"></i>
-        </div>
-        <h3 class="text-lg font-bold text-slate-900 font-heading">เข้าสู่ระบบ Admin</h3>
-        <p class="text-xs text-slate-500 font-light">ยืนยันรหัสผ่านเพื่อปลดล็อกสิทธิ์การจัดการข้อมูล</p>
+  <!-- FORM MODAL -->
+  <div id="form-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white max-w-3xl w-full rounded-2xl shadow-xl overflow-hidden border border-slate-200 max-h-[90vh] flex flex-col">
+      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+        <h3 id="modal-title" class="font-bold text-sm">📝 บันทึกข้อมูลใบอนุญาต</h3>
+        <button onclick="closeFormModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div>
-        <input type="password" id="adminPasswordInput" placeholder="กรอกรหัสผ่าน Admin..." 
-               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-center tracking-widest focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:bg-white focus:outline-none transition-all">
-      </div>
-      <div class="flex gap-2 pt-2">
-        <button onclick="closeAdminModal()" class="w-1/2 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl text-xs hover:bg-slate-50 transition-all font-heading">ยกเลิก</button>
-        <button onclick="verifyAdminPassword()" class="w-1/2 py-2.5 bg-blue-900 text-white font-medium rounded-xl text-xs hover:bg-blue-800 transition-all shadow-md shadow-blue-900/10 font-heading">ยืนยัน</button>
-      </div>
-    </div>
-  </div>
+      <form id="license-form" onsubmit="handleFormSubmit(event)" class="p-6 overflow-y-auto space-y-4">
+        <input type="hidden" id="field-id">
 
-  <!-- Add / Edit Record Modal -->
-  <div id="recordModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden transform transition-all max-h-[92vh] flex flex-col border border-slate-100">
-      
-      <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-        <h3 id="modalTitle" class="text-base font-bold text-slate-900 font-heading">เพิ่มใบอนุญาตใหม่</h3>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 rounded-xl p-1.5 hover:bg-slate-100 transition-all">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="licenseForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4 overflow-y-auto flex-1 text-xs sm:text-sm">
-        <input type="hidden" id="recordId">
-        <input type="hidden" id="existingDocUrl">
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1 font-heading">เลขที่ใบอนุญาต <span class="text-rose-500">*</span></label>
-            <input type="text" id="licenseNo" required placeholder="เช่น LIC-2026-001" 
-                   class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 mb-1">ชื่อสิ่ง/โครงการที่ขออนุญาต *</label>
+            <input type="text" id="field-project-name" required placeholder="เช่น โครงการเจาะบ่อน้ำบาดาล..." class="w-full border border-slate-300 rounded-xl p-2 text-xs">
           </div>
           <div>
-            <label class="block font-semibold text-slate-700 mb-1 font-heading">แจ้งเตือนล่วงหน้า (วัน)</label>
-            <input type="number" id="remindDays" value="30" min="1" 
-                   class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
+            <label class="block text-xs font-bold text-slate-700 mb-1">อำเภอ</label>
+            <input type="text" id="field-amphoe" placeholder="เช่น แม่จัน" class="w-full border border-slate-300 rounded-xl p-2 text-xs">
           </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block font-semibold text-slate-700 mb-1 font-heading">ประเภท / ชื่อใบอนุญาต <span class="text-rose-500">*</span></label>
-            <select id="licenseTypeSelect" onchange="toggleCustomInput('licenseTypeSelect', 'licenseTypeCustomContainer')" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all mb-1.5 font-heading">
+            <label class="block text-xs font-bold text-slate-700 mb-1">ตำบล / หมู่ที่</label>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="field-tambon" placeholder="ตำบล" class="w-full border border-slate-300 rounded-xl p-2 text-xs">
+              <input type="text" id="field-moo" placeholder="หมู่ที่" class="w-full border border-slate-300 rounded-xl p-2 text-xs">
+            </div>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 mb-1">ประเภทงาน / กิจกรรมที่ขออนุญาต</label>
+            <input type="text" id="field-work-activity-type" placeholder="เช่น ขุดเจาะและใช้น้ำบาดาล" class="w-full border border-slate-300 rounded-xl p-2 text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">หน่วยงาน / ประเภทใบอนุญาต *</label>
+            <select id="field-agency-category" required class="w-full border border-slate-300 rounded-xl p-2 text-xs font-bold">
               <option value="กรมทรัพยากรน้ำบาดาล">กรมทรัพยากรน้ำบาดาล</option>
               <option value="กรมเจ้าท่า">กรมเจ้าท่า</option>
-              <option value="กรมอุทยานแห่งชาติ">กรมอุทยานแห่งชาติ</option>
-              <option value="__CUSTOM__">+ เพิ่มประเภทอื่นๆ...</option>
-            </select>
-            <div id="licenseTypeCustomContainer" class="hidden">
-              <input type="text" id="licenseTypeCustom" placeholder="พิมพ์ชื่อประเภทใบอนุญาตใหม่..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
-            </div>
-          </div>
-
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1 font-heading">หน่วยงานที่ผู้ออก <span class="text-rose-500">*</span></label>
-            <select id="issuingAuthoritySelect" onchange="toggleCustomInput('issuingAuthoritySelect', 'issuingAuthorityCustomContainer')" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all mb-1.5 font-heading">
-              <option value="กรมทรัพยากรน้ำบาดาล">กรมทรัพยากรน้ำบาดาล</option>
-              <option value="กรมเจ้าท่า">กรมเจ้าท่า</option>
-              <option value="กรมอุทยานแห่งชาติ">กรมอุทยานแห่งชาติ</option>
-              <option value="__CUSTOM__">+ เพิ่มหน่วยงานอื่นๆ...</option>
-            </select>
-            <div id="issuingAuthorityCustomContainer" class="hidden">
-              <input type="text" id="issuingAuthorityCustom" placeholder="พิมพ์ชื่อหน่วยงานใหม่..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label class="block font-semibold text-slate-700 mb-1 font-heading">ผู้ขอ / ผู้ถือใบอนุญาต <span class="text-rose-500">*</span></label>
-          <select id="applicantNameSelect" onchange="toggleCustomInput('applicantNameSelect', 'applicantNameCustomContainer')" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all mb-1.5 font-heading">
-            <option value="องค์การบริหารส่วนตำบลท่าก๊อ">องค์การบริหารส่วนตำบลท่าก๊อ</option>
-            <option value="__CUSTOM__">+ เพิ่มผู้ขอ/ผู้ถือใหม่...</option>
-          </select>
-          <div id="applicantNameCustomContainer" class="hidden">
-            <input type="text" id="applicantNameCustom" placeholder="พิมพ์ชื่อผู้ขอ/ผู้ถือใบอนุญาต..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
-          </div>
-        </div>
-
-        <div class="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl space-y-2">
-          <label class="block font-semibold text-slate-700 font-heading">อัตราค่าธรรมเนียม</label>
-          <div class="flex items-center gap-6">
-            <label class="inline-flex items-center gap-2 cursor-pointer font-heading">
-              <input type="radio" name="hasFee" value="no" checked onchange="toggleFeeInput()" class="text-blue-900 focus:ring-blue-900">
-              <span>ไม่มี</span>
-            </label>
-            <label class="inline-flex items-center gap-2 cursor-pointer font-heading">
-              <input type="radio" name="hasFee" value="yes" onchange="toggleFeeInput()" class="text-blue-900 focus:ring-blue-900">
-              <span>มีค่าธรรมเนียม</span>
-            </label>
-            <div id="feeAmountContainer" class="hidden flex-1">
-              <input type="number" id="feeAmount" step="0.01" placeholder="จำนวนเงิน (บาท)" class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1 font-heading">หมู่บ้าน / หมู่ที่ <span class="text-rose-500">*</span></label>
-            <select id="villageNo" required class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all font-heading">
-              <option value="">-- เลือกหมู่บ้าน --</option>
-              <option value="หมู่ที่ 1 บ้านดินดำ">หมู่ที่ 1 บ้านดินดำ</option>
-              <option value="หมู่ที่ 2 บ้านป่าถ่อน">หมู่ที่ 2 บ้านป่าถ่อน</option>
-              <option value="หมู่ที่ 3 บ้านป่าลั่น">หมู่ที่ 3 บ้านป่าลั่น</option>
-              <option value="หมู่ที่ 4 บ้านแม่ต่ำ">หมู่ที่ 4 บ้านแม่ต่ำ</option>
-              <option value="หมู่ที่ 5 บ้านสบก๊อ">หมู่ที่ 5 บ้านสบก๊อ</option>
-              <option value="หมู่ที่ 6 บ้านท่าก๊อพลับพลา">หมู่ที่ 6 บ้านท่าก๊อพลับพลา</option>
-              <option value="หมู่ที่ 7 บ้านโฮ่ง">หมู่ที่ 7 บ้านโฮ่ง</option>
-              <option value="หมู่ที่ 8 บ้านปางหลวง">หมู่ที่ 8 บ้านปางหลวง</option>
-              <option value="หมู่ที่ 9 บ้านปางน้ำฮ้าย">หมู่ที่ 9 บ้านปางน้ำฮ้าย</option>
-              <option value="หมู่ที่ 10 บ้านดอนชัย">หมู่ที่ 10 บ้านดอนชัย</option>
-              <option value="หมู่ที่ 11 บ้านแม่ผักแหละ">หมู่ที่ 11 บ้านแม่ผักแหละ</option>
-              <option value="หมู่ที่ 12 บ้านหล่ายลาว">หมู่ที่ 12 บ้านหล่ายลาว</option>
-              <option value="หมู่ที่ 13 บ้านสันมะแฟน">หมู่ที่ 13 บ้านสันมะแฟน</option>
-              <option value="หมู่ที่ 14 บ้านป่าเหียง">หมู่ที่ 14 บ้านป่าเหียง</option>
-              <option value="หมู่ที่ 15 บ้านดอยงาม">หมู่ที่ 15 บ้านดอยงาม</option>
-              <option value="หมู่ที่ 16 บ้านห้วยน้ำขุ่น">หมู่ที่ 16 บ้านห้วยน้ำขุ่น</option>
-              <option value="หมู่ที่ 17 บ้านห้วยชมภู">หมู่ที่ 17 บ้านห้วยชมภู</option>
-              <option value="หมู่ที่ 18 บ้านป่าเกี๊ยะ">หมู่ที่ 18 บ้านป่าเกี๊ยะ</option>
-              <option value="หมู่ที่ 19 บ้านบาหรา">หมู่ที่ 19 บ้านบาหรา</option>
-              <option value="หมู่ที่ 20 บ้านผาต้าย">หมู่ที่ 20 บ้านผาต้าย</option>
-              <option value="หมู่ที่ 21 บ้านชัยมงคล">หมู่ที่ 21 บ้านชัยมงคล</option>
-              <option value="หมู่ที่ 22 บ้านร่มโพธิ์ทอง">หมู่ที่ 22 บ้านร่มโพธิ์ทอง</option>
-              <option value="หมู่ที่ 23 บ้านลอจอ">หมู่ที่ 23 บ้านลอจอ</option>
-              <option value="หมู่ที่ 24 บ้านแม่ต่ำน้อย">หมู่ที่ 24 บ้านแม่ต่ำน้อย</option>
-              <option value="หมู่ที่ 25 บ้านพนาเสรี">หมู่ที่ 25 บ้านพนาเสรี</option>
-              <option value="หมู่ที่ 26 บ้านใหม่สุขสรรค์">หมู่ที่ 26 บ้านใหม่สุขสรรค์</option>
-              <option value="หมู่ที่ 27 บ้านดอนแก้ว">หมู่ที่ 27 บ้านดอนแก้ว</option>
-              <option value="หมู่ที่ 28 บ้านใหม่จะคะ">หมู่ที่ 28 บ้านใหม่จะคะ</option>
+              <option value="กรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช">กรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช</option>
+              <option value="อื่นๆ">อื่นๆ</option>
             </select>
           </div>
           <div>
-            <label class="block font-semibold text-slate-700 mb-1 font-heading">ชื่อสถานที่ (ถ้ามี)</label>
-            <input type="text" id="locationName" placeholder="เช่น โรงสูบน้ำ / ศูนย์พัฒนาเด็กเล็ก" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200/80 text-xs text-center font-heading">
-          <div><span class="text-slate-400 font-light">ตำบล:</span> <strong class="text-slate-800">ท่าก๊อ</strong></div>
-          <div><span class="text-slate-400 font-light">อำเภอ:</span> <strong class="text-slate-800">แม่สรวย</strong></div>
-          <div><span class="text-slate-400 font-light">จังหวัด:</span> <strong class="text-slate-800">เชียงราย</strong></div>
-        </div>
-
-        <div class="space-y-3">
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1 font-heading">กิจกรรมที่อนุญาต</label>
-            <input type="text" id="permittedActivity" placeholder="เช่น เจาะบ่อน้ำบาดาลเพื่อการอุปโภคบริโภค" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
+            <label class="block text-xs font-bold text-slate-700 mb-1">เลขที่ใบอนุญาต</label>
+            <input type="text" id="field-license-number" placeholder="เช่น นบ. 12/2569" class="w-full border border-slate-300 rounded-xl p-2 text-xs">
           </div>
           <div>
-            <label class="block font-semibold text-slate-700 mb-1 font-heading">วิธีดำเนินการ</label>
-            <input type="text" id="operationMethod" placeholder="ระบุวิธีดำเนินการ..." class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
+            <label class="block text-xs font-bold text-slate-700 mb-1">วันที่ยื่นขออนุญาต</label>
+            <input type="date" id="field-request-date" class="w-full border border-slate-300 rounded-xl p-2 text-xs">
           </div>
           <div>
-            <label class="block font-semibold text-slate-700 mb-1 font-heading">เงื่อนไขแนบท้าย</label>
-            <input type="text" id="conditions" placeholder="ระบุเงื่อนไข..." class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1 font-heading">วันที่อนุญาต / ออก <span class="text-rose-500">*</span></label>
-            <input type="date" id="issueDate" required onchange="calculateAutoStatusPreview()" 
-                   class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all font-heading">
+            <label class="block text-xs font-bold text-slate-700 mb-1">วันที่ออกใบอนุญาต</label>
+            <input type="date" id="field-issue-date" onchange="calculateExpiry()" class="w-full border border-slate-300 rounded-xl p-2 text-xs">
           </div>
           <div>
-            <label class="block font-semibold text-slate-700 mb-1 font-heading">วันที่หมดอายุ <span class="text-rose-500">*</span></label>
-            <input type="date" id="expiryDate" required onchange="calculateAutoStatusPreview()" 
-                   class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all font-heading">
+            <label class="block text-xs font-bold text-slate-700 mb-1">อายุใบอนุญาต (ปี)</label>
+            <input type="number" id="field-validity-years" min="1" max="50" onchange="calculateExpiry()" placeholder="เช่น 5" class="w-full border border-slate-300 rounded-xl p-2 text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">วันที่หมดอายุ (คำนวณอัตโนมัติ)</label>
+            <input type="text" id="field-exp-date-preview" readonly placeholder="จะแสดงหลังกรอกวันออกและอายุปี" class="w-full border border-slate-200 bg-slate-100 rounded-xl p-2 text-xs font-bold text-indigo-600">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">จำเป็นต้องต่ออายุหรือไม่</label>
+            <select id="field-is-renewal-needed" class="w-full border border-slate-300 rounded-xl p-2 text-xs">
+              <option value="จำเป็น">จำเป็น</option>
+              <option value="ไม่จำเป็น">ไม่จำเป็น</option>
+              <option value="ยกเว้น">ยกเว้น</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">เงื่อนไขแนบท้าย / การต่ออายุ</label>
+            <input type="text" id="field-renewal-conditions" placeholder="เช่น ยื่นต่ออายุล่วงหน้าอย่างน้อย 30 วัน" class="w-full border border-slate-300 rounded-xl p-2 text-xs">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 mb-1">แนบไฟล์สแกนใบอนุญาต (PDF/รูปภาพ)</label>
+            <input type="file" id="field-file-input" accept=".pdf,image/*" class="w-full border border-slate-300 rounded-xl p-2 text-xs">
           </div>
         </div>
 
-        <div class="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl flex items-center justify-between">
-          <span class="text-slate-600 font-medium font-heading">สถานะคำนวณอัตโนมัติ:</span>
-          <span id="autoStatusBadge" class="font-semibold px-3 py-1 rounded-full bg-slate-200 text-slate-700 status-badge text-xs">
-            โปรดเลือกวันที่
-          </span>
-        </div>
-
-        <!-- Supabase Storage Direct Upload Section -->
-        <div class="space-y-2 p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl">
-          <label class="block font-semibold text-slate-700 font-heading">แนบไฟล์เอกสาร / รูปภาพ (อัปโหลดตรงเข้า Supabase Storage)</label>
-          <input type="file" id="fileInput" accept="application/pdf,image/*" 
-                 class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-900 file:text-white hover:file:bg-blue-800 cursor-pointer border border-slate-200 rounded-xl p-1 bg-white">
-          <div class="relative">
-            <input type="url" id="documentUrlInput" placeholder="หรือวางลิงก์เอกสารภายนอก..." 
-                   class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all">
-          </div>
-          <p id="uploadStatusText" class="text-[11px] text-slate-500 font-light">ระบบจะจัดเก็บไฟล์ไว้ในคลัง Cloud Storage ของระบบโดยตรง</p>
-        </div>
-
-        <div>
-          <label class="block font-semibold text-slate-700 mb-1 font-heading">หมายเหตุ</label>
-          <textarea id="remarks" rows="2" placeholder="รายละเอียดเพิ่มเติม..." 
-                    class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 focus:outline-none transition-all"></textarea>
-        </div>
-
-        <div class="pt-4 border-t border-slate-100 flex justify-end gap-3">
-          <button type="button" onclick="closeModal()" class="px-5 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 font-heading transition-all">ยกเลิก</button>
-          <button type="submit" id="saveBtn" class="px-6 py-2.5 bg-blue-900 text-white font-medium rounded-xl hover:bg-blue-800 shadow-md shadow-blue-900/20 flex items-center gap-2 font-heading transition-all">
-            <i data-lucide="save" class="w-4 h-4"></i>
-            บันทึกข้อมูล
-          </button>
+        <div class="flex justify-end gap-2 pt-4 border-t border-slate-200">
+          <button type="button" onclick="closeFormModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">ยกเลิก</button>
+          <button type="submit" id="btn-submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold">บันทึกข้อมูล</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Document Preview Modal -->
-  <div id="previewModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col h-[85vh] border border-slate-100">
-      <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-        <h3 id="previewTitle" class="text-base font-bold text-slate-900 font-heading">ตัวอย่างเอกสารใบอนุญาต</h3>
-        <button onclick="closePreviewModal()" class="text-slate-400 hover:text-slate-600 rounded-xl p-1.5 hover:bg-slate-100">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="p-4 bg-slate-100/50 flex-1 overflow-auto flex items-center justify-center">
-        <iframe id="previewPdf" src="" class="w-full h-full rounded-2xl border border-slate-200 shadow-inner"></iframe>
-      </div>
-    </div>
-  </div>
-
-  <!-- JavaScript Logic -->
   <script>
-    const SUPABASE_URL = "https://rqzmufywsqpbbxmddlf.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxem11Znl3c3FwYmJ4bWRhbGRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NTAwMzYsImV4cCI6MjEwNTUyNjAzNn0.XJ5B_X-8azEA-oRJ54trMyRspaBmr5WZFYB9U0kzn68";
-    const BUCKET_NAME = "license-documents";
-    const ADMIN_PASS_HASH = "1234"; 
+    // Web App URL จาก Google Apps Script
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwcioF6Y-FcQYdt6Tz2zosROkM5l-mPXA_HmDwkOz34MWDJqHrHziavLloYN2nuiyz8oQ/exec";
 
-    let db;
-    let rawData = [];
-    let isAdmin = false;
+    let globalData = [];
 
-    function initSupabase() {
-      if (window.supabase && window.supabase.createClient) {
-        db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        return true;
-      }
-      return false;
-    }
+    window.addEventListener('DOMContentLoaded', loadData);
 
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-
-      let attempts = 0;
-      const interval = setInterval(() => {
-        attempts++;
-        if (initSupabase()) {
-          clearInterval(interval);
-          fetchLicenses();
-        } else if (attempts > 10) {
-          clearInterval(interval);
-          document.getElementById("tableBody").innerHTML = `
-            <tr>
-              <td colspan="8" class="py-12 text-center text-rose-500 font-heading">
-                ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลอง Refresh หน้าจอใหม่อีกครั้ง
-              </td>
-            </tr>`;
-        }
-      }, 200);
-    });
-
-    function toggleAdminAuth() {
-      if (isAdmin) {
-        isAdmin = false;
-        updateAdminUI();
-      } else {
-        document.getElementById('adminLoginModal').classList.remove('hidden');
-        document.getElementById('adminPasswordInput').value = '';
-        document.getElementById('adminPasswordInput').focus();
-      }
-    }
-
-    function closeAdminModal() {
-      document.getElementById('adminLoginModal').classList.add('hidden');
-    }
-
-    function verifyAdminPassword() {
-      const input = document.getElementById('adminPasswordInput').value;
-      if (input === ADMIN_PASS_HASH) {
-        isAdmin = true;
-        closeAdminModal();
-        updateAdminUI();
-      } else {
-        alert('รหัสผ่านไม่ถูกต้อง');
-      }
-    }
-
-    function updateAdminUI() {
-      const btnText = document.getElementById('adminBtnText');
-      const addBtn = document.getElementById('addLicenseBtn');
-      const adminCols = document.querySelectorAll('.admin-only');
-
-      if (isAdmin) {
-        btnText.innerText = 'ออกจากระบบ Admin';
-        addBtn.classList.remove('hidden');
-        adminCols.forEach(el => el.classList.remove('hidden'));
-      } else {
-        btnText.innerText = 'เข้าสู่ระบบ Admin';
-        addBtn.classList.add('hidden');
-        adminCols.forEach(el => el.classList.add('hidden'));
-      }
-      renderTable(rawData);
-    }
-
-    function toggleCustomInput(selectId, customContainerId) {
-      const select = document.getElementById(selectId);
-      const container = document.getElementById(customContainerId);
-      if (select.value === '__CUSTOM__') {
-        container.classList.remove('hidden');
-      } else {
-        container.classList.add('hidden');
-      }
-    }
-
-    function toggleFeeInput() {
-      const hasFee = document.querySelector('input[name="hasFee"]:checked').value;
-      const feeContainer = document.getElementById('feeAmountContainer');
-      if (hasFee === 'yes') {
-        feeContainer.classList.remove('hidden');
-      } else {
-        feeContainer.classList.add('hidden');
-      }
-    }
-
-    function getAutoStatus(issueDateStr, expiryDateStr, remindDaysVal = 30) {
-      if (!issueDateStr || !expiryDateStr) return { code: 'pending', text: 'รอดำเนินการ', badgeClass: 'bg-slate-100 text-slate-600 border-slate-200' };
-
-      const now = new Date();
-      now.setHours(0,0,0,0);
-      
-      const issueDate = new Date(issueDateStr);
-      issueDate.setHours(0,0,0,0);
-
-      const expDate = new Date(expiryDateStr);
-      expDate.setHours(0,0,0,0);
-
-      const remindDays = parseInt(remindDaysVal) || 30;
-      const alertWindow = new Date(now.getTime() + (remindDays * 24 * 60 * 60 * 1000));
-
-      if (now < issueDate) {
-        return { code: 'pending', text: 'รอดำเนินการ', badgeClass: 'bg-slate-100 text-slate-600 border-slate-200' };
-      } else if (now > expDate) {
-        return { code: 'expired', text: 'หมดอายุ', badgeClass: 'bg-rose-50 text-rose-700 border-rose-200' };
-      } else if (expDate <= alertWindow) {
-        return { code: 'expiring', text: 'ใกล้หมดอายุ', badgeClass: 'bg-amber-50 text-amber-700 border-amber-200' };
-      } else {
-        return { code: 'active', text: 'ใช้งานปกติ', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
-      }
-    }
-
-    function calculateAutoStatusPreview() {
-      const issue = document.getElementById('issueDate').value;
-      const expiry = document.getElementById('expiryDate').value;
-      const remindDays = document.getElementById('remindDays').value;
-      const badge = document.getElementById('autoStatusBadge');
-
-      if (!issue || !expiry) {
-        badge.className = "font-semibold px-3 py-1 rounded-full bg-slate-200 text-slate-700 status-badge text-xs";
-        badge.innerText = "โปรดเลือกวันที่";
-        return;
-      }
-
-      const st = getAutoStatus(issue, expiry, remindDays);
-      badge.className = `font-semibold px-3 py-1 rounded-full border status-badge text-xs ${st.badgeClass}`;
-      badge.innerText = st.text;
-    }
-
-    async function fetchLicenses() {
-      if (!db) return;
+    async function loadData() {
+      Swal.fire({ title: 'กำลังโหลดข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       try {
-        const { data, error } = await db
-          .from('license_register')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        rawData = data || [];
-        updateStats(rawData);
-        renderTable(rawData);
+        const res = await fetch(GAS_WEB_APP_URL);
+        const json = await res.json();
+        Swal.close();
+        if (json.status === 'success') {
+          globalData = json.data || [];
+          renderKPI();
+          renderTable();
+        } else {
+          Swal.fire('เกิดข้อผิดพลาด', json.message, 'error');
+        }
       } catch (err) {
-        console.error("Fetch Error:", err);
-        document.getElementById("tableBody").innerHTML = `
-          <tr>
-            <td colspan="8" class="py-12 text-center text-rose-500 font-heading">
-              เกิดข้อผิดพลาดในการโหลดข้อมูล: ${err.message}
-            </td>
-          </tr>`;
+        Swal.fire('เกิดข้อผิดพลาด', err.message, 'error');
       }
     }
 
-    function updateStats(data) {
-      let active = 0, expiring = 0, expired = 0;
+    function renderKPI() {
+      document.getElementById('kpi-total').innerText = globalData.length;
+      document.getElementById('kpi-ok').innerText = globalData.filter(d => d.doc_status === 'ยังไม่หมดอายุ').length;
+      document.getElementById('kpi-warn').innerText = globalData.filter(d => d.doc_status === 'ใกล้หมดอายุ').length;
+      document.getElementById('kpi-exp').innerText = globalData.filter(d => d.doc_status === 'หมดอายุแล้ว').length;
+    }
 
-      data.forEach(item => {
-        const st = getAutoStatus(item.issue_date, item.expiry_date, item.remind_days);
-        if (st.code === 'active') active++;
-        else if (st.code === 'expiring') expiring++;
-        else if (st.code === 'expired') expired++;
+    function renderTable() {
+      const search = document.getElementById('search-input').value.toLowerCase();
+      const agencyFilter = document.getElementById('filter-agency').value;
+      const statusFilter = document.getElementById('filter-status').value;
+
+      const filtered = globalData.filter(d => {
+        const matchSearch = (d.project_name || '').toLowerCase().includes(search) || (d.license_number || '').toLowerCase().includes(search);
+        const matchAgency = agencyFilter === 'ALL' || d.agency_category === agencyFilter;
+        const matchStatus = statusFilter === 'ALL' || d.doc_status === statusFilter;
+        return matchSearch && matchAgency && matchStatus;
       });
 
-      document.getElementById('stat-total').innerText = data.length;
-      document.getElementById('stat-active').innerText = active;
-      document.getElementById('stat-expiring').innerText = expiring;
-      document.getElementById('stat-expired').innerText = expired;
-    }
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
 
-    function renderTable(data) {
-      const tbody = document.getElementById("tableBody");
-      const colSpanCount = isAdmin ? 8 : 7;
-
-      if (data.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="${colSpanCount}" class="py-16 text-center text-slate-400 font-light">
-              ไม่พบรายการใบอนุญาตในระบบ
-            </td>
-          </tr>`;
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 font-bold">ไม่พบข้อมูลตามเงื่อนไขที่ค้นหา</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = data.map(item => {
-        const st = getAutoStatus(item.issue_date, item.expiry_date, item.remind_days);
-        const badgeHtml = `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs border status-badge ${st.badgeClass}">${st.text}</span>`;
+      filtered.forEach(item => {
+        let badgeClass = 'badge-pending';
+        if (item.doc_status === 'ยังไม่หมดอายุ') badgeClass = 'badge-ok';
+        if (item.doc_status === 'ใกล้หมดอายุ') badgeClass = 'badge-warn';
+        if (item.doc_status === 'หมดอายุแล้ว') badgeClass = 'badge-exp';
 
-        const expiryText = item.expiry_date 
-          ? new Date(item.expiry_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
-          : '-';
+        let fileBtn = item.file_url ? `<a href="${item.file_url}" target="_blank" rel="noopener noreferrer" class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100"><i class="fa-solid fa-file-pdf"></i> ดูไฟล์</a>` : `<span class="text-slate-400">-</span>`;
 
-        return `
-          <tr class="hover:bg-slate-50/80 transition-colors">
-            <td class="py-3.5 px-4 font-mono font-semibold text-slate-900">${item.license_no}</td>
-            <td class="py-3.5 px-4">
-              <div class="font-medium text-slate-800 font-heading">${item.license_type}</div>
-              <div class="text-[11px] text-slate-400 font-light">${item.issuing_authority || '-'}</div>
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 border-b border-slate-100">
+            <td class="p-3.5">
+              <div class="font-bold text-slate-900">${escapeHtml(item.license_number || '-')}</div>
+              <div class="text-[11px] text-indigo-600 font-semibold">${escapeHtml(item.agency_category)}</div>
             </td>
-            <td class="py-3.5 px-4">
-              <div class="text-slate-800 font-medium">${item.village_no || '-'}</div>
-              <div class="text-[11px] text-slate-400 font-light">${item.location_name || ''}</div>
+            <td class="p-3.5">
+              <div class="font-bold text-slate-900">${escapeHtml(item.project_name)}</div>
+              <div class="text-[11px] text-slate-500">${escapeHtml(item.amphoe || '')} ${escapeHtml(item.tambon || '')} ${escapeHtml(item.moo || '')}</div>
             </td>
-            <td class="py-3.5 px-4 text-slate-700">${item.applicant_name}</td>
-            <td class="py-3.5 px-4 text-xs font-mono text-slate-600">${expiryText}</td>
-            <td class="py-3.5 px-4 text-center">${badgeHtml}</td>
-            <td class="py-3.5 px-4 text-center">
-              ${item.document_url 
-                ? `<button onclick="openPreview('${item.document_url}')" class="p-2 text-blue-900 hover:bg-blue-50 rounded-xl transition-colors" title="ดูเอกสาร">
-                    <i data-lucide="file-text" class="w-4 h-4"></i>
-                   </button>` 
-                : `<span class="text-slate-300">-</span>`}
+            <td class="p-3.5">${escapeHtml(item.work_activity_type || '-')}</td>
+            <td class="p-3.5">
+              <div>ออก: ${item.issue_date || '-'}</div>
+              <div class="text-slate-500 font-bold">หมดอายุ: ${item.exp_date || '-'}</div>
             </td>
-            ${isAdmin ? `
-            <td class="py-3.5 px-4 text-center admin-only">
-              <div class="flex items-center justify-center gap-1">
-                <button onclick="editRecord('${item.id}')" class="p-1.5 text-slate-500 hover:text-blue-900 hover:bg-slate-100 rounded-lg transition-colors" title="แก้ไข">
-                  <i data-lucide="edit-3" class="w-4 h-4"></i>
-                </button>
-                <button onclick="deleteRecord('${item.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="ลบ">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-              </div>
-            </td>` : ''}
+            <td class="p-3.5 text-center">
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold inline-block ${badgeClass}">${item.doc_status}</span>
+            </td>
+            <td class="p-3.5">
+              <div class="font-bold text-slate-800">${escapeHtml(item.is_renewal_needed)}</div>
+              <div class="text-[11px] text-slate-500">${escapeHtml(item.renewal_conditions || '-')}</div>
+            </td>
+            <td class="p-3.5 text-center">${fileBtn}</td>
+            <td class="p-3.5 text-center">
+              <button onclick="confirmDelete('${item.id}')" class="text-rose-600 hover:text-rose-800 p-1"><i class="fa-solid fa-trash"></i></button>
+            </td>
           </tr>
         `;
-      }).join('');
-
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-
-    function filterData() {
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      const statusFilter = document.getElementById('statusFilter').value;
-
-      const filtered = rawData.filter(item => {
-        const matchesSearch = 
-          (item.license_no && item.license_no.toLowerCase().includes(search)) ||
-          (item.license_type && item.license_type.toLowerCase().includes(search)) ||
-          (item.village_no && item.village_no.toLowerCase().includes(search)) ||
-          (item.applicant_name && item.applicant_name.toLowerCase().includes(search));
-
-        if (!matchesSearch) return false;
-
-        if (statusFilter === 'all') return true;
-
-        const st = getAutoStatus(item.issue_date, item.expiry_date, item.remind_days);
-        return st.code === statusFilter;
       });
-
-      renderTable(filtered);
     }
 
-    function openModal(isEdit = false) {
-      document.getElementById('modalTitle').innerText = isEdit ? 'แก้ไขข้อมูลใบอนุญาต' : 'เพิ่มใบอนุญาตใหม่';
-      document.getElementById('recordModal').classList.remove('hidden');
+    function calculateExpiry() {
+      const issueStr = document.getElementById('field-issue-date').value;
+      const years = Number(document.getElementById('field-validity-years').value) || 0;
+      if (issueStr && years > 0) {
+        const issue = new Date(issueStr);
+        const exp = new Date(issue.getFullYear() + years, issue.getMonth(), issue.getDate());
+        document.getElementById('field-exp-date-preview').value = exp.toISOString().split('T')[0];
+      }
     }
 
-    function closeModal() {
-      document.getElementById('recordModal').classList.add('hidden');
-      document.getElementById('licenseForm').reset();
-      document.getElementById('recordId').value = '';
-      document.getElementById('existingDocUrl').value = '';
-      document.getElementById('documentUrlInput').value = '';
-      document.getElementById('licenseTypeCustomContainer').classList.add('hidden');
-      document.getElementById('issuingAuthorityCustomContainer').classList.add('hidden');
-      document.getElementById('applicantNameCustomContainer').classList.add('hidden');
-      document.getElementById('feeAmountContainer').classList.add('hidden');
-      document.getElementById('uploadStatusText').innerText = 'ระบบจะจัดเก็บไฟล์ไว้ในคลัง Cloud Storage ของระบบโดยตรง';
-      calculateAutoStatusPreview();
+    function openFormModal() {
+      document.getElementById('license-form').reset();
+      document.getElementById('field-id').value = '';
+      document.getElementById('field-exp-date-preview').value = '';
+      document.getElementById('form-modal').classList.remove('hidden');
+    }
+
+    function closeFormModal() {
+      document.getElementById('form-modal').classList.add('hidden');
     }
 
     async function handleFormSubmit(e) {
       e.preventDefault();
-      if (!isAdmin) {
-        alert('กรุณาเข้าสู่ระบบ Admin เพื่อทำการบันทึกข้อมูล');
-        return;
-      }
+      const btn = document.getElementById('btn-submit');
+      btn.disabled = true;
+      btn.innerText = 'กำลังบันทึก...';
 
-      const saveBtn = document.getElementById('saveBtn');
-      const uploadStatus = document.getElementById('uploadStatusText');
-      saveBtn.disabled = true;
-      saveBtn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> กำลังบันทึกข้อมูล...`;
-
-      const id = document.getElementById('recordId').value;
-      let documentUrl = document.getElementById('documentUrlInput').value.trim() || document.getElementById('existingDocUrl').value;
-
-      const licenseNo = document.getElementById('licenseNo').value.trim();
-      const villageNo = document.getElementById('villageNo').value;
-      
-      const licenseTypeSelect = document.getElementById('licenseTypeSelect').value;
-      const licenseType = licenseTypeSelect === '__CUSTOM__' ? document.getElementById('licenseTypeCustom').value.trim() : licenseTypeSelect;
-
-      const issuingAuthoritySelect = document.getElementById('issuingAuthoritySelect').value;
-      const issuingAuthority = issuingAuthoritySelect === '__CUSTOM__' ? document.getElementById('issuingAuthorityCustom').value.trim() : issuingAuthoritySelect;
-
-      const applicantNameSelect = document.getElementById('applicantNameSelect').value;
-      const applicantName = applicantNameSelect === '__CUSTOM__' ? document.getElementById('applicantNameCustom').value.trim() : applicantNameSelect;
-
-      // 🚀 Supabase Storage Direct Upload Process (เสถียร ไม่ติด CORS/Failed to fetch)
-      const fileInput = document.getElementById('fileInput');
-      if (fileInput && fileInput.files && fileInput.files.length > 0) {
-        uploadStatus.innerText = "⏳ กำลังอัปโหลดไฟล์ตรงเข้า Supabase Storage...";
-        uploadStatus.className = "text-[11px] text-blue-600 font-medium animate-pulse";
-
-        try {
-          const file = fileInput.files[0];
-          const rawFileName = (file && file.name) ? file.name : "document.pdf";
-          const fileExt = rawFileName.includes('.') ? rawFileName.split('.').pop() : 'pdf';
-          
-          // กำหนดชื่อไฟล์ที่เป็นระเบียบเรียบร้อยใน Storage
-          const fileNameInStorage = `${Date.now()}_${licenseNo.replace(/[^a-zA-Z0-9_-]/g, '')}.${fileExt}`;
-
-          // อัปโหลดตรงเข้า Supabase Storage Bucket "license-documents"
-          const { data: storageData, error: uploadErr } = await db.storage
-            .from(BUCKET_NAME)
-            .upload(fileNameInStorage, file, {
-              cacheControl: '3600',
-              upsert: true
-            });
-
-          if (uploadErr) throw uploadErr;
-
-          // ดึง Public URL ของไฟล์มาเก็บใน Database
-          const { data: publicUrlData } = db.storage
-            .from(BUCKET_NAME)
-            .getPublicUrl(fileNameInStorage);
-
-          documentUrl = publicUrlData.publicUrl;
-
-        } catch (uploadErr) {
-          console.error("Storage Upload Error:", uploadErr);
-          alert("ไม่สามารถอัปโหลดไฟล์เข้า Storage ได้: " + uploadErr.message);
-          saveBtn.disabled = false;
-          saveBtn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> บันทึกข้อมูล`;
-          return;
-        }
-      }
-
-      const hasFee = document.querySelector('input[name="hasFee"]:checked').value;
-      const feeAmount = hasFee === 'yes' ? (parseFloat(document.getElementById('feeAmount').value) || 0) : 0;
-
-      const issueDate = document.getElementById('issueDate').value;
-      const expiryDate = document.getElementById('expiryDate').value;
-      const remindDays = parseInt(document.getElementById('remindDays').value) || 30;
-      const autoStatus = getAutoStatus(issueDate, expiryDate, remindDays).code;
-
-      const payload = {
-        control_no: licenseNo,
-        license_no: licenseNo,
-        remind_days: remindDays,
-        license_type: licenseType,
-        issuing_authority: issuingAuthority,
-        applicant_name: applicantName,
-        has_fee: hasFee,
-        fee_amount: feeAmount,
-        village_no: villageNo,
-        location_name: document.getElementById('locationName').value.trim(),
-        subdistrict: 'ท่าก๊อ',
-        district: 'แม่สรวย',
-        province: 'เชียงราย',
-        permitted_activity: document.getElementById('permittedActivity').value.trim(),
-        operation_method: document.getElementById('operationMethod').value.trim(),
-        conditions: document.getElementById('conditions').value.trim(),
-        issue_date: issueDate || null,
-        expiry_date: expiryDate || null,
-        status: autoStatus,
-        document_url: documentUrl,
-        remarks: document.getElementById('remarks').value.trim()
+      const formData = {
+        id: document.getElementById('field-id').value,
+        project_name: document.getElementById('field-project-name').value,
+        amphoe: document.getElementById('field-amphoe').value,
+        tambon: document.getElementById('field-tambon').value,
+        moo: document.getElementById('field-moo').value,
+        work_activity_type: document.getElementById('field-work-activity-type').value,
+        agency_category: document.getElementById('field-agency-category').value,
+        license_number: document.getElementById('field-license-number').value,
+        request_date: document.getElementById('field-request-date').value,
+        issue_date: document.getElementById('field-issue-date').value,
+        validity_years: document.getElementById('field-validity-years').value,
+        is_renewal_needed: document.getElementById('field-is-renewal-needed').value,
+        renewal_conditions: document.getElementById('field-renewal-conditions').value
       };
 
-      try {
-        let res;
-        if (id) {
-          res = await db.from('license_register').update(payload).eq('id', id);
-        } else {
-          res = await db.from('license_register').insert([payload]);
+      const fileInput = document.getElementById('field-file-input');
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const base64 = await convertFileToBase64(file);
+        const uploadRes = await fetch(GAS_WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'upload', fileData: { fileName: file.name, mimeType: file.type, data: base64 } })
+        }).then(r => r.json());
+
+        if (uploadRes.status === 'success') {
+          formData.file_url = uploadRes.url;
         }
+      }
 
-        if (res.error) throw res.error;
+      const saveRes = await fetch(GAS_WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'save', data: formData })
+      }).then(r => r.json());
 
-        closeModal();
-        await fetchLicenses();
-      } catch (err) {
-        console.error("Save Error:", err);
-        alert('เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล: ' + err.message);
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> บันทึกข้อมูล`;
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+      btn.disabled = false;
+      btn.innerText = 'บันทึกข้อมูล';
+
+      if (saveRes.status === 'success') {
+        Swal.fire('บันทึกสำเร็จ!', saveRes.message, 'success');
+        closeFormModal();
+        loadData();
+      } else {
+        Swal.fire('เกิดข้อผิดพลาด', saveRes.message, 'error');
       }
     }
 
-    function editRecord(id) {
-      if (!isAdmin) return;
-      const item = rawData.find(r => r.id === id);
-      if (!item) return;
-
-      document.getElementById('recordId').value = item.id;
-      document.getElementById('licenseNo').value = item.license_no || '';
-      document.getElementById('remindDays').value = item.remind_days || 30;
-
-      const lTypes = ['กรมทรัพยากรน้ำบาดาล', 'กรมเจ้าท่า', 'กรมอุทยานแห่งชาติ'];
-      if (lTypes.includes(item.license_type)) {
-        document.getElementById('licenseTypeSelect').value = item.license_type;
+    async function confirmDelete(id) {
+      if (!confirm(`ยืนยันการลบรายการ [${id}]?`)) return;
+      Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      const res = await fetch(GAS_WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'delete', id: id })
+      }).then(r => r.json());
+      Swal.close();
+      if (res.status === 'success') {
+        Swal.fire('ลบสำเร็จ', res.message, 'success');
+        loadData();
       } else {
-        document.getElementById('licenseTypeSelect').value = '__CUSTOM__';
-        document.getElementById('licenseTypeCustom').value = item.license_type || '';
-        document.getElementById('licenseTypeCustomContainer').classList.remove('hidden');
-      }
-
-      if (lTypes.includes(item.issuing_authority)) {
-        document.getElementById('issuingAuthoritySelect').value = item.issuing_authority;
-      } else {
-        document.getElementById('issuingAuthoritySelect').value = '__CUSTOM__';
-        document.getElementById('issuingAuthorityCustom').value = item.issuing_authority || '';
-        document.getElementById('issuingAuthorityCustomContainer').classList.remove('hidden');
-      }
-
-      if (item.applicant_name === 'องค์การบริหารส่วนตำบลท่าก๊อ') {
-        document.getElementById('applicantNameSelect').value = item.applicant_name;
-      } else {
-        document.getElementById('applicantNameSelect').value = '__CUSTOM__';
-        document.getElementById('applicantNameCustom').value = item.applicant_name || '';
-        document.getElementById('applicantNameCustomContainer').classList.remove('hidden');
-      }
-
-      if (item.has_fee === 'yes') {
-        document.querySelector('input[name="hasFee"][value="yes"]').checked = true;
-        document.getElementById('feeAmount').value = item.fee_amount || 0;
-        document.getElementById('feeAmountContainer').classList.remove('hidden');
-      } else {
-        document.querySelector('input[name="hasFee"][value="no"]').checked = true;
-        document.getElementById('feeAmountContainer').classList.add('hidden');
-      }
-
-      document.getElementById('villageNo').value = item.village_no || '';
-      document.getElementById('locationName').value = item.location_name || '';
-      document.getElementById('permittedActivity').value = item.permitted_activity || '';
-      document.getElementById('operationMethod').value = item.operation_method || '';
-      document.getElementById('conditions').value = item.conditions || '';
-
-      document.getElementById('issueDate').value = item.issue_date || '';
-      document.getElementById('expiryDate').value = item.expiry_date || '';
-      document.getElementById('existingDocUrl').value = item.document_url || '';
-      document.getElementById('remarks').value = item.remarks || '';
-
-      if (item.document_url) {
-        document.getElementById('documentUrlInput').value = item.document_url;
-      }
-
-      calculateAutoStatusPreview();
-      openModal(true);
-    }
-
-    async function deleteRecord(id) {
-      if (!isAdmin) return;
-      if (!confirm('คุณต้องการลบรายการใบอนุญาตนี้ใช่หรือไม่?')) return;
-
-      try {
-        const { error } = await db.from('license_register').delete().eq('id', id);
-        if (error) throw error;
-        await fetchLicenses();
-      } catch (err) {
-        alert('ไม่สามารถลบข้อมูลได้: ' + err.message);
+        Swal.fire('เกิดข้อผิดพลาด', res.message, 'error');
       }
     }
 
-    function openPreview(docUrl) {
-      const pdf = document.getElementById('previewPdf');
-      if (!docUrl) return;
-
-      // รองรับทั้ง Google Drive Link และ Supabase Storage Link
-      const match = docUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || docUrl.match(/id=([a-zA-Z0-9_-]+)/);
-      if (match && match[1]) {
-        pdf.src = `https://drive.google.com/file/d/${match[1]}/preview`;
-      } else {
-        pdf.src = docUrl;
-      }
-
-      document.getElementById('previewModal').classList.remove('hidden');
-      if (typeof lucide !== 'undefined') lucide.createIcons();
+    function convertFileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
     }
 
-    function closePreviewModal() {
-      document.getElementById('previewModal').classList.add('hidden');
-      document.getElementById('previewPdf').src = '';
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
   </script>
 </body>
