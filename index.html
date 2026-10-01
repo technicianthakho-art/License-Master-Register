@@ -433,7 +433,7 @@
     });
 
     /**
-     * SAFE FETCH PARSER TO PREVENT UNEXPECTED TOKEN ERRORS AND PROMPTLY RESOLVE
+     * SAFE FETCH PARSER TO PREVENT UNEXPECTED TOKEN ERRORS
      */
     async function safeFetchJson(url, options = {}) {
       try {
@@ -518,7 +518,7 @@
       Swal.fire({ title: 'กำลังโหลดข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       try {
         const json = await safeFetchJson(GAS_WEB_APP_URL);
-        Swal.close(); // ปิด Swal ทันทีไม่ว่าจะมีหรือไม่มีข้อมูล
+        Swal.close();
         
         if (json && json.data) {
           globalData = json.data || [];
@@ -1001,7 +1001,7 @@
       if (globalData.length === 0) return Swal.fire('ไม่มีข้อมูล', 'ไม่มีรายการให้ส่งออก', 'info');
       let csv = "\uFEFFลำดับ,ID,ขั้นตอน,สถานะการยื่นเรื่อง,เลขที่ใบอนุญาต,หน่วยงาน,ชื่อโครงการ,อำเภอ,ตำบล,หมู่ที่,ชื่อหมู่บ้าน,งบประมาณ,ประเภทกิจกรรม,วันยื่นเรื่อง,วันออก,วันหมดอายุ,สถานะใบอนุญาต,การต่ออายุ,รายละเอียดโครงการ,เงื่อนไขแนบท้าย\n";
       globalData.forEach((d, i) => {
-        csv me += `"${i + 1}","${d.id}","${d.process_stage}","${d.request_status}","${d.license_number}","${d.agency_category}","${d.project_name}","แม่สรวย","ท่าก๊อ","${d.moo}","${d.village_name}","${d.budget_amount}","${d.work_activity_type}","${d.request_date}","${d.issue_date}","${d.exp_date}","${d.doc_status}","${d.is_renewal_needed}","${d.scope_detail}","${d.renewal_conditions}"\n`;
+        csv += `"${i + 1}","${d.id}","${d.process_stage}","${d.request_status}","${d.license_number}","${d.agency_category}","${d.project_name}","แม่สรวย","ท่าก๊อ","${d.moo}","${d.village_name}","${d.budget_amount}","${d.work_activity_type}","${d.request_date}","${d.issue_date}","${d.exp_date}","${d.doc_status}","${d.is_renewal_needed}","${d.scope_detail}","${d.renewal_conditions}"\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
