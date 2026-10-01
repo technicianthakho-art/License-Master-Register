@@ -28,10 +28,6 @@
       box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03); 
       transition: all 0.2s ease-in-out; 
     }
-    .bento-card:hover { 
-      border-color: #cbd5e1;
-      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
-    }
 
     /* Modern High-Contrast Status Badges */
     .badge-ok { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
@@ -62,7 +58,7 @@
 
   <!-- TOP HEADER -->
   <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200 shadow-sm">
-    <div class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1750px] mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16 sm:h-20">
         
         <!-- Logo & Title -->
@@ -102,86 +98,83 @@
   </header>
 
   <!-- MAIN CONTAINER -->
-  <main class="flex-grow max-w-[1700px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+  <main class="flex-grow max-w-[1750px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 space-y-4">
 
-    <!-- SINGLE-BAR CONDENSED KPI RIBBON -->
-    <div class="bento-card p-3 sm:p-4 bg-white flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-extrabold">
-      <div class="flex items-center gap-2 text-slate-800">
-        <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
-        <span>รายการทั้งหมด: <strong id="kpi-total" class="text-indigo-600 font-black text-sm sm:text-base">0</strong></span>
-      </div>
-      <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
-      <div class="flex items-center gap-2 text-blue-700">
-        <i class="fa-solid fa-paper-plane text-xs"></i>
-        <span>อยู่ระหว่างยื่นเรื่อง: <strong id="kpi-process" class="text-blue-700 font-black text-sm sm:text-base">0</strong></span>
-      </div>
-      <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
-      <div class="flex items-center gap-2 text-emerald-700">
-        <i class="fa-solid fa-circle-check text-xs"></i>
-        <span>ปกติ (ยังไม่หมดอายุ): <strong id="kpi-ok" class="text-emerald-700 font-black text-sm sm:text-base">0</strong></span>
-      </div>
-      <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
-      <div class="flex items-center gap-2 text-amber-700">
-        <i class="fa-solid fa-clock text-xs"></i>
-        <span>ใกล้หมดอายุ (90 วัน): <strong id="kpi-warn" class="text-amber-700 font-black text-sm sm:text-base">0</strong></span>
-      </div>
-      <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
-      <div class="flex items-center gap-2 text-rose-700">
-        <i class="fa-solid fa-circle-xmark text-xs"></i>
-        <span>หมดอายุแล้ว: <strong id="kpi-exp" class="text-rose-700 font-black text-sm sm:text-base">0</strong></span>
-      </div>
-    </div>
-
-    <!-- SEARCH & FILTER TOOLBAR -->
-    <div class="bento-card p-3.5 sm:p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
-        <div class="relative w-full sm:w-80">
-          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs sm:text-sm"></i>
-          <input type="text" id="search-input" oninput="renderTable()" placeholder="ค้นหาชื่อโครงการ / เลขที่ / หมู่บ้าน..." class="pl-10 pr-4 py-2 w-full custom-input rounded-xl text-xs sm:text-sm font-semibold">
+    <!-- ALL-IN-ONE SINGLE COMPACT RIBBON (SEARCH + FILTERS + STATS) -->
+    <div class="bento-card p-3 sm:p-3.5 bg-white flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+      
+      <!-- Search & Filters Group -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-grow">
+        <div class="relative w-full sm:w-72">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+          <input type="text" id="search-input" oninput="renderTable()" placeholder="ค้นหาชื่อโครงการ / เลขที่ / หมู่บ้าน..." class="pl-9 pr-3 py-1.5 w-full custom-input rounded-xl text-xs font-semibold">
         </div>
 
-        <div class="grid grid-cols-2 gap-2 w-full sm:w-auto">
-          <select id="filter-agency" onchange="renderTable()" class="custom-input text-slate-800 text-xs sm:text-sm rounded-xl px-3 py-2 font-bold">
-            <option value="ALL">ทุกหน่วยงาน</option>
-            <option value="กรมทรัพยากรน้ำบาดาล">กรมทรัพยากรน้ำบาดาล</option>
-            <option value="กรมเจ้าท่า">กรมเจ้าท่า</option>
-            <option value="กรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช">กรมอุทยานแห่งชาติฯ</option>
-          </select>
+        <select id="filter-agency" onchange="renderTable()" class="custom-input text-slate-800 text-xs rounded-xl px-3 py-1.5 font-bold">
+          <option value="ALL">ทุกหน่วยงาน</option>
+          <option value="กรมทรัพยากรน้ำบาดาล">กรมทรัพยากรน้ำบาดาล</option>
+          <option value="กรมเจ้าท่า">กรมเจ้าท่า</option>
+          <option value="กรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช">กรมอุทยานแห่งชาติฯ</option>
+        </select>
 
-          <select id="filter-status" onchange="renderTable()" class="custom-input text-slate-800 text-xs sm:text-sm rounded-xl px-3 py-2 font-bold">
-            <option value="ALL">ทุกขั้นตอน/สถานะ</option>
-            <option value="อยู่ระหว่างยื่นคำขอ">📤 อยู่ระหว่างยื่นคำขอ</option>
-            <option value="ยังไม่หมดอายุ">🟢 ยังไม่หมดอายุ</option>
-            <option value="ใกล้หมดอายุ">🟡 ใกล้หมดอายุ</option>
-            <option value="หมดอายุแล้ว">🔴 หมดอายุแล้ว</option>
-          </select>
+        <select id="filter-status" onchange="renderTable()" class="custom-input text-slate-800 text-xs rounded-xl px-3 py-1.5 font-bold">
+          <option value="ALL">ทุกขั้นตอน/สถานะ</option>
+          <option value="อยู่ระหว่างยื่นคำขอ">📤 อยู่ระหว่างยื่นคำขอ</option>
+          <option value="ยังไม่หมดอายุ">🟢 ยังไม่หมดอายุ</option>
+          <option value="ใกล้หมดอายุ">🟡 ใกล้หมดอายุ</option>
+          <option value="หมดอายุแล้ว">🔴 หมดอายุแล้ว</option>
+        </select>
+      </div>
+
+      <!-- Quick Stats KPI Ribbon Items -->
+      <div class="flex items-center justify-between lg:justify-end gap-3 text-xs font-extrabold border-t lg:border-t-0 pt-2 lg:pt-0 border-slate-100 overflow-x-auto">
+        <div class="flex items-center gap-1.5 whitespace-nowrap text-slate-700">
+          <span>ทั้งหมด: <strong id="kpi-total" class="text-indigo-600 font-black">0</strong></span>
         </div>
+        <div class="h-3.5 w-px bg-slate-200"></div>
+        <div class="flex items-center gap-1.5 whitespace-nowrap text-blue-700">
+          <i class="fa-solid fa-paper-plane text-[10px]"></i>
+          <span>ยื่นเรื่อง: <strong id="kpi-process" class="text-blue-700 font-black">0</strong></span>
+        </div>
+        <div class="h-3.5 w-px bg-slate-200"></div>
+        <div class="flex items-center gap-1.5 whitespace-nowrap text-emerald-700">
+          <i class="fa-solid fa-circle-check text-[10px]"></i>
+          <span>ปกติ: <strong id="kpi-ok" class="text-emerald-700 font-black">0</strong></span>
+        </div>
+        <div class="h-3.5 w-px bg-slate-200"></div>
+        <div class="flex items-center gap-1.5 whitespace-nowrap text-amber-700">
+          <i class="fa-solid fa-clock text-[10px]"></i>
+          <span>ใกล้หมดอายุ: <strong id="kpi-warn" class="text-amber-700 font-black">0</strong></span>
+        </div>
+        <div class="h-3.5 w-px bg-slate-200"></div>
+        <div class="flex items-center gap-1.5 whitespace-nowrap text-rose-700">
+          <i class="fa-solid fa-circle-xmark text-[10px]"></i>
+          <span>หมดอายุ: <strong id="kpi-exp" class="text-rose-700 font-black">0</strong></span>
+        </div>
+
+        <div class="h-3.5 w-px bg-slate-200"></div>
+        <button onclick="exportToCSV()" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold transition inline-flex items-center gap-1">
+          <i class="fa-solid fa-file-excel text-emerald-600"></i> CSV
+        </button>
       </div>
 
-      <div class="flex items-center gap-2 justify-end pt-2 md:pt-0 border-t md:border-0 border-slate-100">
-        <button onclick="exportToCSV()" class="flex-1 sm:flex-none px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
-          <i class="fa-solid fa-file-excel text-emerald-600 text-sm"></i> ส่งออก CSV
-        </button>
-        <button onclick="loadData()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition border border-slate-200" title="รีเฟรชข้อมูล">
-          <i class="fa-solid fa-rotate-right text-xs"></i>
-        </button>
-      </div>
     </div>
 
-    <!-- DESKTOP DATA TABLE (MODERN SLATE HEADER DESIGN) -->
+    <!-- DESKTOP DATA TABLE WITH NUMBERING -->
     <div class="hidden md:block bento-card overflow-hidden border border-slate-200 shadow-sm">
       <div class="overflow-x-auto custom-scrollbar">
-        <table class="w-full text-left border-collapse text-xs min-w-[1150px]">
+        <table class="w-full text-left border-collapse text-xs min-w-[1200px]">
           <thead>
             <tr class="bg-slate-900 text-white font-extrabold uppercase tracking-wider text-[11px] border-b border-slate-800">
-              <th class="p-4 w-52"><i class="fa-solid fa-folder-open text-indigo-400 mr-1.5"></i>ชื่อโครงการ / สถานที่</th>
-              <th class="p-4 w-48"><i class="fa-solid fa-building-columns text-indigo-400 mr-1.5"></i>หน่วยงาน / กิจกรรม</th>
-              <th class="p-4 w-44"><i class="fa-solid fa-list-check text-indigo-400 mr-1.5"></i>ขั้นตอน / เลขที่ใบ</th>
-              <th class="p-4 w-44"><i class="fa-solid fa-calendar-days text-indigo-400 mr-1.5"></i>วันยื่น -> วันหมดอายุ</th>
-              <th class="p-4 text-center w-36"><i class="fa-solid fa-shield-halved text-indigo-400 mr-1.5"></i>สถานะ</th>
-              <th class="p-4 w-44"><i class="fa-solid fa-arrows-rotate text-indigo-400 mr-1.5"></i>การต่ออายุ / เงื่อนไข</th>
-              <th class="p-4 text-center w-24"><i class="fa-solid fa-file-pdf text-indigo-400 mr-1.5"></i>ไฟล์แนบ</th>
-              <th class="p-4 text-center w-24 action-col"><i class="fa-solid fa-gear text-indigo-400 mr-1.5"></i>จัดการ</th>
+              <th class="p-3.5 text-center w-12">ลำดับ</th>
+              <th class="p-3.5 w-60"><i class="fa-solid fa-folder-open text-indigo-400 mr-1.5"></i>ชื่อโครงการ / สถานที่</th>
+              <th class="p-3.5 w-48"><i class="fa-solid fa-building-columns text-indigo-400 mr-1.5"></i>หน่วยงาน / กิจกรรม</th>
+              <th class="p-3.5 w-40"><i class="fa-solid fa-sack-dollar text-indigo-400 mr-1.5"></i>งบประมาณ (บาท)</th>
+              <th class="p-3.5 w-44"><i class="fa-solid fa-list-check text-indigo-400 mr-1.5"></i>ขั้นตอน / เลขที่ใบ</th>
+              <th class="p-3.5 w-40"><i class="fa-solid fa-calendar-days text-indigo-400 mr-1.5"></i>วันยื่น -> วันหมดอายุ</th>
+              <th class="p-3.5 text-center w-32"><i class="fa-solid fa-shield-halved text-indigo-400 mr-1.5"></i>สถานะ</th>
+              <th class="p-3.5 text-center w-24"><i class="fa-solid fa-file-pdf text-indigo-400 mr-1.5"></i>ไฟล์แนบ</th>
+              <th class="p-3.5 text-center w-24 action-col"><i class="fa-solid fa-gear text-indigo-400 mr-1.5"></i>จัดการ</th>
             </tr>
           </thead>
           <tbody id="table-body" class="divide-y divide-slate-100 font-medium bg-white"></tbody>
@@ -255,7 +248,7 @@
             <input type="text" value="ต.ท่าก๊อ อ.แม่สรวย จ.เชียงราย" readonly class="w-full border border-slate-200 bg-slate-100 rounded-xl p-2.5 text-xs font-bold text-slate-700">
           </div>
 
-          <!-- MOO & VILLAGE SELECTOR (UPDATED 28 VILLAGES) -->
+          <!-- MOO & VILLAGE SELECTOR -->
           <div>
             <label class="block text-xs font-extrabold text-slate-800 mb-1">หมู่ที่ / ชื่อหมู่บ้าน <span class="text-rose-500">*</span></label>
             <select id="field-moo" required class="w-full custom-input rounded-xl p-2.5 text-xs font-bold">
@@ -278,7 +271,7 @@
             <input type="text" id="field-custom-agency" placeholder="เช่น กรมป่าไม้ / กรมชลประทาน" class="w-full custom-input rounded-xl p-2.5 text-xs font-bold">
           </div>
 
-          <!-- WORK ACTIVITY TYPE (DROPDOWN + OTHER) -->
+          <!-- WORK ACTIVITY TYPE -->
           <div>
             <label class="block text-xs font-extrabold text-slate-800 mb-1">ประเภทงาน / กิจกรรมที่ขออนุญาต <span class="text-rose-500">*</span></label>
             <select id="field-work-activity-type" onchange="toggleCustomActivity()" required class="w-full custom-input rounded-xl p-2.5 text-xs font-bold">
@@ -295,8 +288,14 @@
             <input type="text" id="field-custom-activity" placeholder="ระบุประเภทกิจกรรม..." class="w-full custom-input rounded-xl p-2.5 text-xs font-bold">
           </div>
 
-          <!-- REQUEST DATE FIRST -->
-          <div class="md:col-span-2">
+          <!-- BUDGET AMOUNT FIELD -->
+          <div>
+            <label class="block text-xs font-extrabold text-slate-800 mb-1">งบประมาณโครงการ (บาท)</label>
+            <input type="number" step="0.01" id="field-budget-amount" placeholder="เช่น 500000" class="w-full custom-input rounded-xl p-2.5 text-xs font-extrabold text-indigo-700">
+          </div>
+
+          <!-- REQUEST DATE -->
+          <div>
             <label class="block text-xs font-extrabold text-slate-800 mb-1">วันที่ยื่นขออนุญาต <span class="text-rose-500">*</span></label>
             <input type="date" id="field-request-date" required class="w-full custom-input rounded-xl p-2.5 text-xs font-bold">
           </div>
@@ -325,7 +324,13 @@
             </div>
           </div>
 
-          <!-- CONDITIONAL LICENSE FIELDS (SHOW ONLY WHEN APPROVED) -->
+          <!-- SCOPE & DETAILS (TEXTAREA) -->
+          <div class="md:col-span-2">
+            <label class="block text-xs font-extrabold text-slate-800 mb-1">รายละเอียดโครงการ / ขอบเขตงาน</label>
+            <textarea id="field-scope-detail" rows="3" placeholder="ระบุรายละเอียดการดำเนินงาน ขอบเขตงาน หรือแบบแปลนย่อ..." class="w-full custom-input rounded-xl p-2.5 text-xs font-semibold"></textarea>
+          </div>
+
+          <!-- CONDITIONAL LICENSE FIELDS -->
           <div id="section-approved-license" class="md:col-span-2 hidden space-y-4 pt-2 border-t border-slate-200">
             <h4 class="font-extrabold text-emerald-700 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-certificate"></i> ข้อมูลใบอนุญาตที่ได้รับอนุมัติ
@@ -374,6 +379,12 @@
             </div>
           </div>
 
+          <!-- REMARK FIELD -->
+          <div class="md:col-span-2">
+            <label class="block text-xs font-extrabold text-slate-800 mb-1">หมายเหตุเพิ่มเติม</label>
+            <input type="text" id="field-remark" placeholder="หมายเหตุหรือข้อมูลติดตามงานเพิ่มเติม..." class="w-full custom-input rounded-xl p-2.5 text-xs font-semibold">
+          </div>
+
         </div>
 
         <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-200">
@@ -390,33 +401,15 @@
 
     // 28 UPDATED VILLAGES IN TAMBON THA KHO
     const VILLAGE_LIST = [
-      { moo: 1, name: "บ้านดินดำ" },
-      { moo: 2, name: "บ้านป่าถ่อน" },
-      { moo: 3, name: "บ้านป่าลัน" },
-      { moo: 4, name: "บ้านแม่ต๋ำ" },
-      { moo: 5, name: "บ้านสบก๊อ" },
-      { moo: 6, name: "บ้านท่าก๊อพลับพลา" },
-      { moo: 7, name: "บ้านโฮ่ง" },
-      { moo: 8, name: "บ้านปางหลวง" },
-      { moo: 9, name: "บ้านปางน้ำฮ้าย" },
-      { moo: 10, name: "บ้านดอนชัย" },
-      { moo: 11, name: "บ้านแม่ผักแหละ" },
-      { moo: 12, name: "บ้านหล่ายลาว" },
-      { moo: 13, name: "บ้านสันมะแฟน" },
-      { moo: 14, name: "บ้านป่าเหียง" },
-      { moo: 15, name: "บ้านดอยงาม" },
-      { moo: 16, name: "บ้านห้วยน้ำขุ่น" },
-      { moo: 17, name: "บ้านห้วยชมภู" },
-      { moo: 18, name: "บ้านป่าเกี๊ยะ" },
-      { moo: 19, name: "บ้านบาหรา" },
-      { moo: 20, name: "บ้านผาต้าย" },
-      { moo: 21, name: "บ้านชัยมงคล" },
-      { moo: 22, name: "บ้านร่มโพธิ์ทอง" },
-      { moo: 23, name: "บ้านลอจอ" },
-      { moo: 24, name: "บ้านแม่ต๋ำน้อย" },
-      { moo: 25, name: "บ้านพนาเสรี" },
-      { moo: 26, name: "บ้านใหม่สุขสรรค์" },
-      { moo: 27, name: "บ้านดอนแก้ว" },
+      { moo: 1, name: "บ้านดินดำ" }, { moo: 2, name: "บ้านป่าถ่อน" }, { moo: 3, name: "บ้านป่าลัน" },
+      { moo: 4, name: "บ้านแม่ต๋ำ" }, { moo: 5, name: "บ้านสบก๊อ" }, { moo: 6, name: "บ้านท่าก๊อพลับพลา" },
+      { moo: 7, name: "บ้านโฮ่ง" }, { moo: 8, name: "บ้านปางหลวง" }, { moo: 9, name: "บ้านปางน้ำฮ้าย" },
+      { moo: 10, name: "บ้านดอนชัย" }, { moo: 11, name: "บ้านแม่ผักแหละ" }, { moo: 12, name: "บ้านหล่ายลาว" },
+      { moo: 13, name: "บ้านสันมะแฟน" }, { moo: 14, name: "บ้านป่าเหียง" }, { moo: 15, name: "บ้านดอยงาม" },
+      { moo: 16, name: "บ้านห้วยน้ำขุ่น" }, { moo: 17, name: "บ้านห้วยชมภู" }, { moo: 18, name: "บ้านป่าเกี๊ยะ" },
+      { moo: 19, name: "บ้านบาหรา" }, { moo: 20, name: "บ้านผาต้าย" }, { moo: 21, name: "บ้านชัยมงคล" },
+      { moo: 22, name: "บ้านร่มโพธิ์ทอง" }, { moo: 23, name: "บ้านลอจอ" }, { moo: 24, name: "บ้านแม่ต๋ำน้อย" },
+      { moo: 25, name: "บ้านพนาเสรี" }, { moo: 26, name: "บ้านใหม่สุขสรรค์" }, { moo: 27, name: "บ้านดอนแก้ว" },
       { moo: 28, name: "บ้านใหม่จะคะ" }
     ];
 
@@ -544,12 +537,12 @@
       mobileContainer.innerHTML = '';
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 font-bold">ไม่พบข้อมูลตามเงื่อนไขที่ค้นหา</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-400 font-bold">ไม่พบข้อมูลตามเงื่อนไขที่ค้นหา</td></tr>`;
         mobileContainer.innerHTML = `<div class="bento-card p-6 text-center text-slate-400 font-bold text-xs">ไม่พบข้อมูลตามเงื่อนไขที่ค้นหา</div>`;
         return;
       }
 
-      filtered.forEach(item => {
+      filtered.forEach((item, index) => {
         let badgeClass = 'badge-pending';
         let statusIcon = 'fa-clock';
 
@@ -574,51 +567,55 @@
             <button onclick="confirmDelete('${item.id}')" title="ลบ" class="p-2 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition"><i class="fa-solid fa-trash text-sm"></i></button>
           </div>` : `<span class="text-slate-400 text-[11px] font-bold">อ่านอย่างเดียว</span>`;
 
-        // Desktop Row
+        const budgetFormatted = item.budget_amount ? Number(item.budget_amount).toLocaleString('th-TH') + ' ฿' : '-';
+
+        // Desktop Row with Index Numbering
         tbody.innerHTML += `
           <tr onclick="viewDetail('${item.id}')" class="hover:bg-indigo-50/40 cursor-pointer transition border-b border-slate-100">
-            <td class="p-4">
+            <td class="p-3.5 text-center font-extrabold text-slate-400">${index + 1}</td>
+            <td class="p-3.5">
               <div class="font-extrabold text-slate-900 leading-snug hover:text-indigo-600 transition">${escapeHtml(item.project_name)}</div>
               <div class="text-[11px] text-slate-500 font-bold mt-0.5">หมู่ที่ ${item.moo || '-'} ${escapeHtml(item.village_name || '')} ต.ท่าก๊อ</div>
             </td>
-            <td class="p-4">
+            <td class="p-3.5">
               <div class="font-extrabold text-indigo-600">${escapeHtml(item.agency_category)}</div>
               <div class="text-[11px] text-slate-500 font-bold mt-0.5">${escapeHtml(item.work_activity_type || '-')}</div>
             </td>
-            <td class="p-4">
+            <td class="p-3.5 font-extrabold text-slate-900 text-xs">${budgetFormatted}</td>
+            <td class="p-3.5">
               <div class="font-black text-slate-900">${item.process_stage === 'ออกใบอนุญาตแล้ว' ? escapeHtml(item.license_number || '-') : 'อยู่ระหว่างยื่นขอ'}</div>
               <div class="text-[11px] text-slate-500 font-bold mt-0.5">${escapeHtml(item.request_status || '-')}</div>
             </td>
-            <td class="p-4 text-xs">
+            <td class="p-3.5 text-xs">
               <div class="text-slate-600 font-semibold">ยื่น: ${item.request_date || '-'}</div>
               <div class="text-slate-900 font-extrabold mt-0.5">หมด: ${item.exp_date || '-'}</div>
             </td>
-            <td class="p-4 text-center">
+            <td class="p-3.5 text-center">
               <span class="px-2.5 py-1 rounded-full text-xs font-black inline-flex items-center gap-1 ${badgeClass}">
                 <i class="fa-solid ${statusIcon}"></i> ${item.doc_status}
               </span>
             </td>
-            <td class="p-4 text-xs">
-              <div class="font-extrabold text-slate-800">${escapeHtml(item.is_renewal_needed)}</div>
-              <div class="text-slate-500 font-bold truncate max-w-xs mt-0.5">${escapeHtml(item.renewal_conditions || '-')}</div>
-            </td>
-            <td class="p-4 text-center" onclick="event.stopPropagation()">${fileBtn}</td>
-            <td class="p-4 text-center">${actionButtons}</td>
+            <td class="p-3.5 text-center" onclick="event.stopPropagation()">${fileBtn}</td>
+            <td class="p-3.5 text-center">${actionButtons}</td>
           </tr>
         `;
 
-        // Mobile Card
+        // Mobile Card with Number Index
         mobileContainer.innerHTML += `
           <div onclick="viewDetail('${item.id}')" class="bento-card p-4 space-y-3 cursor-pointer">
             <div class="flex justify-between items-start gap-2">
-              <div>
-                <span class="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">${escapeHtml(item.agency_category)}</span>
-                <h4 class="font-extrabold text-slate-900 text-sm leading-snug mt-0.5">${escapeHtml(item.project_name)}</h4>
+              <div class="flex items-start gap-2">
+                <span class="px-2 py-0.5 bg-slate-100 text-slate-700 font-black rounded-lg text-xs">#${index + 1}</span>
+                <div>
+                  <span class="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">${escapeHtml(item.agency_category)}</span>
+                  <h4 class="font-extrabold text-slate-900 text-sm leading-snug mt-0.5">${escapeHtml(item.project_name)}</h4>
+                </div>
               </div>
               <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black shrink-0 ${badgeClass}">${item.doc_status}</span>
             </div>
 
             <div class="text-xs text-slate-600 font-semibold space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <div><span class="text-slate-400 font-bold">งบประมาณ:</span> <strong class="text-indigo-700">${budgetFormatted}</strong></div>
               <div><span class="text-slate-400 font-bold">ขั้นตอน:</span> ${escapeHtml(item.process_stage)}</div>
               <div><span class="text-slate-400 font-bold">สถานที่:</span> หมู่ที่ ${item.moo || '-'} ${escapeHtml(item.village_name || '')} ต.ท่าก๊อ</div>
               <div><span class="text-slate-400 font-bold">วันหมดอายุ:</span> <strong class="text-slate-900">${item.exp_date || '-'}</strong></div>
@@ -652,6 +649,8 @@
         if (item.doc_status === 'หมดอายุแล้ว') badgeClass = 'badge-exp';
       }
 
+      const budgetFormatted = item.budget_amount ? Number(item.budget_amount).toLocaleString('th-TH') + ' บาท' : 'ไม่ระบุ';
+
       const content = document.getElementById('modal-detail-content');
       content.innerHTML = `
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
@@ -659,6 +658,7 @@
             <span class="text-[11px] text-slate-500 font-extrabold block mb-1">สถานที่ตั้งโครงการ:</span>
             <p class="text-slate-900 font-bold text-xs">หมู่ที่ ${item.moo || '-'} ${escapeHtml(item.village_name || '')} ต.ท่าก๊อ อ.แม่สรวย จ.เชียงราย</p>
           </div>
+          <div><span class="text-[11px] text-slate-500 font-extrabold block">งบประมาณโครงการ:</span> <strong class="text-indigo-700 text-base font-black">${budgetFormatted}</strong></div>
           <div><span class="text-[11px] text-slate-500 font-extrabold block">ขั้นตอนการทำงาน:</span> <strong class="text-indigo-600">${escapeHtml(item.process_stage)}</strong></div>
           <div><span class="text-[11px] text-slate-500 font-extrabold block mb-1">สถานะใบอนุญาต:</span> <span class="px-2.5 py-0.5 rounded-full text-xs font-black ${badgeClass}">${item.doc_status}</span></div>
           <div><span class="text-[11px] text-slate-500 font-extrabold block">สถานะการยื่นเรื่อง:</span> <strong class="text-slate-900">${escapeHtml(item.request_status || '-')}</strong></div>
@@ -670,8 +670,12 @@
           <div><span class="text-[11px] text-slate-500 font-extrabold block">วันที่หมดอายุ:</span> <strong class="text-rose-600 font-black">${item.exp_date || '-'}</strong></div>
           <div><span class="text-[11px] text-slate-500 font-extrabold block">ความจำเป็นต้องต่ออายุ:</span> <strong class="text-slate-900">${escapeHtml(item.is_renewal_needed)}</strong></div>
           <div class="sm:col-span-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-            <span class="text-[11px] text-slate-500 font-extrabold block mb-1">เงื่อนไขแนบท้าย / การต่ออายุ:</span>
-            <p class="text-slate-900 font-semibold text-xs leading-relaxed">${escapeHtml(item.renewal_conditions || 'ไม่มีเงื่อนไขเพิ่มเติม')}</p>
+            <span class="text-[11px] text-slate-500 font-extrabold block mb-1">รายละเอียดโครงการ / ขอบเขตงาน:</span>
+            <p class="text-slate-900 font-semibold text-xs leading-relaxed whitespace-pre-line">${escapeHtml(item.scope_detail || 'ไม่มีรายละเอียดเพิ่มเติม')}</p>
+          </div>
+          <div class="sm:col-span-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <span class="text-[11px] text-slate-500 font-extrabold block mb-1">เงื่อนไขแนบท้าย / หมายเหตุ:</span>
+            <p class="text-slate-900 font-semibold text-xs leading-relaxed">${escapeHtml(item.renewal_conditions || item.remark || 'ไม่มีเงื่อนไขเพิ่มเติม')}</p>
           </div>
         </div>
       `;
@@ -778,6 +782,9 @@
       document.getElementById('field-id').value = item.id;
       document.getElementById('field-project-name').value = item.project_name || '';
       document.getElementById('field-moo').value = item.moo || '';
+      document.getElementById('field-budget-amount').value = item.budget_amount || '';
+      document.getElementById('field-scope-detail').value = item.scope_detail || '';
+      document.getElementById('field-remark').value = item.remark || '';
       
       const agencySelect = document.getElementById('field-agency-category');
       const defaultAgencies = ["กรมทรัพยากรน้ำบาดาล", "กรมเจ้าท่า", "กรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช"];
@@ -859,6 +866,9 @@
         village_name: finalVillageName,
         work_activity_type: finalActivity,
         agency_category: finalAgency,
+        budget_amount: document.getElementById('field-budget-amount').value,
+        scope_detail: document.getElementById('field-scope-detail').value,
+        remark: document.getElementById('field-remark').value,
         process_stage: document.getElementById('field-process-stage').value,
         request_status: document.getElementById('field-request-status').value,
         license_number: document.getElementById('field-license-number').value,
@@ -942,9 +952,9 @@
 
     function exportToCSV() {
       if (globalData.length === 0) return Swal.fire('ไม่มีข้อมูล', 'ไม่มีรายการให้ส่งออก', 'info');
-      let csv = "\uFEFFID,ขั้นตอน,สถานะการยื่นเรื่อง,เลขที่ใบอนุญาต,หน่วยงาน,ชื่อโครงการ,อำเภอ,ตำบล,หมู่ที่,ชื่อหมู่บ้าน,ประเภทกิจกรรม,วันยื่นเรื่อง,วันออก,วันหมดอายุ,สถานะใบอนุญาต,การต่ออายุ,เงื่อนไขแนบท้าย\n";
-      globalData.forEach(d => {
-        csv += `"${d.id}","${d.process_stage}","${d.request_status}","${d.license_number}","${d.agency_category}","${d.project_name}","แม่สรวย","ท่าก๊อ","${d.moo}","${d.village_name}","${d.work_activity_type}","${d.request_date}","${d.issue_date}","${d.exp_date}","${d.doc_status}","${d.is_renewal_needed}","${d.renewal_conditions}"\n`;
+      let csv = "\uFEFFลำดับ,ID,ขั้นตอน,สถานะการยื่นเรื่อง,เลขที่ใบอนุญาต,หน่วยงาน,ชื่อโครงการ,อำเภอ,ตำบล,หมู่ที่,ชื่อหมู่บ้าน,งบประมาณ,ประเภทกิจกรรม,วันยื่นเรื่อง,วันออก,วันหมดอายุ,สถานะใบอนุญาต,การต่ออายุ,รายละเอียดโครงการ,เงื่อนไขแนบท้าย\n";
+      globalData.forEach((d, i) => {
+        csv += `"${i + 1}","${d.id}","${d.process_stage}","${d.request_status}","${d.license_number}","${d.agency_category}","${d.project_name}","แม่สรวย","ท่าก๊อ","${d.moo}","${d.village_name}","${d.budget_amount}","${d.work_activity_type}","${d.request_date}","${d.issue_date}","${d.exp_date}","${d.doc_status}","${d.is_renewal_needed}","${d.scope_detail}","${d.renewal_conditions}"\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
