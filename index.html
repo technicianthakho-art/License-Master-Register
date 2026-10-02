@@ -10,8 +10,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- SweetAlert2 -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- SweetAlert2 (Defer for non-blocking UI) -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
   <style>
     body { 
@@ -408,6 +408,7 @@
   <script>
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwcioF6Y-FcQYdt6Tz2zosROkM5l-mPXA_HmDwkOz34MWDJqHrHziavLloYN2nuiyz8oQ/exec";
     const ADMIN_PASSWORD = "12345";
+    const LOCAL_CACHE_KEY = "LICENSE_LOCAL_CACHE";
 
     // 28 UPDATED VILLAGES IN TAMBON THA KHO
     const VILLAGE_LIST = [
@@ -485,6 +486,19 @@
     }
 
     function promptAdminLogin() {
+      if (typeof Swal === 'undefined') {
+        const pass = prompt('🔐 เข้าสู่ระบบแอดมิน\nกรอกรหัสผ่านผู้ดูแลระบบ:');
+        if (pass === ADMIN_PASSWORD) {
+          sessionStorage.setItem('license_admin_logged', 'true');
+          isAdmin = true;
+          updateAuthUI();
+          alert('เข้าสู่ระบบแอดมินเรียบร้อยแล้ว');
+        } else if (pass !== null) {
+          alert('รหัสผ่านไม่ถูกต้อง');
+        }
+        return;
+      }
+
       Swal.fire({
         title: '🔐 เข้าสู่ระบบแอดมิน',
         input: 'password',
@@ -511,27 +525,75 @@
       sessionStorage.removeItem('license_admin_logged');
       isAdmin = false;
       updateAuthUI();
-      Swal.fire('ออกจากระบบ', 'สลับกลับสู่โหมดอ่านอย่างเดียวแล้ว', 'info');
+      if (typeof Swal !== 'undefined') {
+        Swal.fire('ออกจากระบบ', 'สลับกลับสู่โหมดอ่านอย่างเดียวแล้ว', 'info');
+      }
+    }
+
+    // SKELETON SHIMMER FOR INSTANT VISUAL FEEDBACK
+    function renderSkeleton() {
+      const tbody = document.getElementById('table-body');
+      const mobileContainer = document.getElementById('mobile-cards-container');
+      
+      let skeletonRows = '';
+      for (let i = 0; i < 5; i++) {
+        skeletonRows += `
+          <tr class="animate-pulse border-b border-slate-200/60">
+            <td class="p-3.5 text-center"><div class="h-4 bg-slate-200 rounded w-6 mx-auto"></div></td>
+            <td class="p-3.5"><div class="h-4 bg-slate-200 rounded w-48 mb-1"></div><div class="h-3 bg-slate-100 rounded w-32"></div></td>
+            <td class="p-3.5"><div class="h-4 bg-slate-200 rounded w-36 mb-1"></div><div class="h-3 bg-slate-100 rounded w-24"></div></td>
+            <td class="p-3.5"><div class="h-4 bg-slate-200 rounded w-24"></div></td>
+            <td class="p-3.5"><div class="h-4 bg-slate-200 rounded w-28 mb-1"></div><div class="h-3 bg-slate-100 rounded w-20"></div></td>
+            <td class="p-3.5"><div class="h-3 bg-slate-200 rounded w-24 mb-1"></div><div class="h-3 bg-slate-100 rounded w-24"></div></td>
+            <td class="p-3.5 text-center"><div class="h-6 bg-slate-200 rounded-full w-20 mx-auto"></div></td>
+            <td class="p-3.5 text-center"><div class="h-6 bg-slate-200 rounded-xl w-16 mx-auto"></div></td>
+            <td class="p-3.5 text-center"><div class="h-6 bg-slate-200 rounded-xl w-16 mx-auto"></div></td>
+          </tr>`;
+      }
+      tbody.innerHTML = skeletonRows;
+
+      let skeletonCards = '';
+      for (let i = 0; i < 3; i++) {
+        skeletonCards += `
+          <div class="bento-card p-4 space-y-3 animate-pulse">
+            <div class="flex justify-between items-start">
+              <div class="h-4 bg-slate-200 rounded w-40"></div>
+              <div class="h-5 bg-slate-200 rounded-full w-16"></div>
+            </div>
+            <div class="h-16 bg-slate-100 rounded-xl"></div>
+          </div>`;
+      }
+      mobileContainer.innerHTML = skeletonCards;
     }
 
     async function loadData() {
-      Swal.fire({ title: 'กำลังโหลดข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      // 1. FAST RENDER FROM LOCALSTORAGE CACHE (STALE-WHILE-REVALIDATE)
+      const cached = localStorage.getItem(LOCAL_CACHE_KEY);
+      if (cached) {
+        try {
+          globalData = JSON.parse(cached) || [];
+          renderKPI();
+          renderTable();
+        } catch(e) {}
+      } else {
+        renderSkeleton();
+      }
+
+      // 2. BACKGROUND FETCH FRESH DATA FROM GAS
       try {
         const json = await safeFetchJson(GAS_WEB_APP_URL);
-        Swal.close();
-        
         if (json && json.data) {
           globalData = json.data || [];
-        } else {
-          globalData = [];
+          localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(globalData));
         }
         renderKPI();
         renderTable();
       } catch (err) {
-        Swal.close();
-        globalData = [];
-        renderKPI();
-        renderTable();
+        if (!cached) {
+          globalData = [];
+          renderKPI();
+          renderTable();
+        }
       }
     }
 
@@ -964,15 +1026,26 @@
         btn.disabled = false;
         btn.innerHTML = `บันทึกข้อมูล`;
 
-        Swal.fire('บันทึกสำเร็จ!', 'ระบบทำการบันทึกข้อมูลเรียบร้อยแล้ว', 'success');
+        if (typeof Swal !== 'undefined') {
+          Swal.fire('บันทึกสำเร็จ!', 'ระบบทำการบันทึกข้อมูลเรียบร้อยแล้ว', 'success');
+        } else {
+          alert('บันทึกข้อมูลเรียบร้อยแล้ว');
+        }
+
         closeFormModal();
+        localStorage.removeItem(LOCAL_CACHE_KEY); // ล้างแคชฝั่งเบราว์เซอร์เพื่อให้ดึงข้อมูลใหม่
         await loadData();
 
       } catch (err) {
         btn.disabled = false;
         btn.innerHTML = `บันทึกข้อมูล`;
-        Swal.fire('บันทึกสำเร็จ!', 'ดำเนินการเรียบร้อยแล้ว', 'success');
+        if (typeof Swal !== 'undefined') {
+          Swal.fire('บันทึกสำเร็จ!', 'ดำเนินการเรียบร้อยแล้ว', 'success');
+        } else {
+          alert('ดำเนินการเรียบร้อยแล้ว');
+        }
         closeFormModal();
+        localStorage.removeItem(LOCAL_CACHE_KEY);
         await loadData();
       }
     }
@@ -980,31 +1053,52 @@
     async function confirmDelete(id) {
       if (!isAdmin) return promptAdminLogin();
       
-      Swal.fire({
-        title: 'ยืนยันการลบ?',
-        text: `คุณต้องการลบรายการ [${id}] ออกจากระบบใช่หรือไม่`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'ลบรายการ',
-        cancelButtonText: 'ยกเลิก'
-      }).then(async (result) => {
-        if (result.isConfirmed) {
+      const doDelete = async () => {
+        if (typeof Swal !== 'undefined') {
           Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-          await safeFetchJson(GAS_WEB_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'delete', id: id })
-          });
+        }
+        await safeFetchJson(GAS_WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'delete', id: id })
+        });
+        if (typeof Swal !== 'undefined') {
           Swal.close();
           Swal.fire('ลบสำเร็จ', 'ดำเนินการลบรายการเรียบร้อยแล้ว', 'success');
-          await loadData();
+        } else {
+          alert('ดำเนินการลบรายการเรียบร้อยแล้ว');
         }
-      });
+        localStorage.removeItem(LOCAL_CACHE_KEY);
+        await loadData();
+      };
+
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: 'ยืนยันการลบ?',
+          text: `คุณต้องการลบรายการ [${id}] ออกจากระบบใช่หรือไม่`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#ef4444',
+          cancelButtonColor: '#64748b',
+          confirmButtonText: 'ลบรายการ',
+          cancelButtonText: 'ยกเลิก'
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            await doDelete();
+          }
+        });
+      } else {
+        if (confirm(`คุณต้องการลบรายการ [${id}] ออกจากระบบใช่หรือไม่`)) {
+          await doDelete();
+        }
+      }
     }
 
     function exportToCSV() {
-      if (globalData.length === 0) return Swal.fire('ไม่มีข้อมูล', 'ไม่มีรายการให้ส่งออก', 'info');
+      if (globalData.length === 0) {
+        if (typeof Swal !== 'undefined') Swal.fire('ไม่มีข้อมูล', 'ไม่มีรายการให้ส่งออก', 'info');
+        else alert('ไม่มีรายการให้ส่งออก');
+        return;
+      }
       let csv = "\uFEFFลำดับ,ID,ขั้นตอน,สถานะการยื่นเรื่อง,เลขที่ใบอนุญาต,หน่วยงาน,ชื่อโครงการ,อำเภอ,ตำบล,หมู่ที่,ชื่อหมู่บ้าน,งบประมาณ,ประเภทกิจกรรม,วันยื่นเรื่อง,วันออก,วันหมดอายุ,สถานะใบอนุญาต,การต่ออายุ,รายละเอียดโครงการ,เงื่อนไขแนบท้าย\n";
       globalData.forEach((d, i) => {
         csv += `"${i + 1}","${d.id}","${d.process_stage}","${d.request_status}","${d.license_number}","${d.agency_category}","${d.project_name}","แม่สรวย","ท่าก๊อ","${d.moo}","${d.village_name}","${d.budget_amount}","${d.work_activity_type}","${d.request_date}","${d.issue_date}","${d.exp_date}","${d.doc_status}","${d.is_renewal_needed}","${d.scope_detail}","${d.renewal_conditions}"\n`;
