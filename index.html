@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- SweetAlert2 (Defer for non-blocking UI) -->
+  <!-- SweetAlert2 (Defer) -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
   <style>
@@ -20,7 +20,6 @@
       color: #0f172a;
     }
     
-    /* Bento Grid Component */
     .bento-card { 
       background: #ffffff; 
       border-radius: 1rem; 
@@ -29,14 +28,12 @@
       transition: all 0.2s ease-in-out; 
     }
 
-    /* Modern High-Contrast Status Badges */
     .badge-ok { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
     .badge-warn { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
     .badge-exp { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
     .badge-process { background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
     .badge-pending { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
-    /* Row Background Color States for High-Visibility Highlights */
     .row-bg-ok { background-color: #f0fdf4 !important; }
     .row-bg-ok:hover { background-color: #dcfce7 !important; }
     
@@ -46,7 +43,6 @@
     .row-bg-exp { background-color: #fef2f2 !important; }
     .row-bg-exp:hover { background-color: #fee2e2 !important; }
 
-    /* Custom Input Controls */
     .custom-input {
       background-color: #ffffff;
       border: 1px solid #cbd5e1;
@@ -71,7 +67,6 @@
     <div class="max-w-[1750px] mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16 sm:h-20">
         
-        <!-- Logo & Title -->
         <div class="flex items-center space-x-3.5">
           <div class="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
             <i class="fa-solid fa-id-card text-lg sm:text-xl"></i>
@@ -85,7 +80,6 @@
           </div>
         </div>
 
-        <!-- Auth Controls & Action Buttons -->
         <div class="flex items-center gap-2">
           <div id="admin-indicator" class="hidden sm:flex items-center gap-2 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700">
             <span id="admin-status-text">👁️ โหมดอ่านอย่างเดียว</span>
@@ -110,10 +104,8 @@
   <!-- MAIN CONTAINER -->
   <main class="flex-grow max-w-[1750px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 space-y-4">
 
-    <!-- ALL-IN-ONE SINGLE COMPACT RIBBON (SEARCH + FILTERS + STATS) -->
+    <!-- ALL-IN-ONE RIBBON -->
     <div class="bento-card p-3 sm:p-3.5 bg-white flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-      
-      <!-- Search & Filters Group -->
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-grow">
         <div class="relative w-full sm:w-72">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
@@ -136,7 +128,6 @@
         </select>
       </div>
 
-      <!-- Quick Stats KPI Ribbon Items -->
       <div class="flex items-center justify-between lg:justify-end gap-3 text-xs font-extrabold border-t lg:border-t-0 pt-2 lg:pt-0 border-slate-100 overflow-x-auto">
         <div class="flex items-center gap-1.5 whitespace-nowrap text-slate-700">
           <span>ทั้งหมด: <strong id="kpi-total" class="text-indigo-600 font-black">0</strong></span>
@@ -167,10 +158,9 @@
           <i class="fa-solid fa-file-excel text-emerald-600"></i> CSV
         </button>
       </div>
-
     </div>
 
-    <!-- DESKTOP DATA TABLE WITH NUMBERING & COLOR HIGHLIGHTS -->
+    <!-- DATA TABLE -->
     <div class="hidden md:block bento-card overflow-hidden border border-slate-200 shadow-sm">
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse text-xs min-w-[1200px]">
@@ -192,7 +182,7 @@
       </div>
     </div>
 
-    <!-- MOBILE CARDS VIEW -->
+    <!-- MOBILE CARDS -->
     <div id="mobile-cards-container" class="md:hidden space-y-3"></div>
 
   </main>
@@ -224,7 +214,6 @@
   <!-- FORM MODAL -->
   <div id="form-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4">
     <div class="bg-white max-w-3xl w-full rounded-2xl shadow-2xl overflow-hidden border border-slate-200 max-h-[92vh] flex flex-col">
-      
       <div class="bg-slate-900 text-white p-4 sm:p-5 flex justify-between items-center shrink-0">
         <div class="flex items-center gap-3">
           <div class="p-2 bg-indigo-500/20 rounded-xl text-indigo-400">
@@ -245,20 +234,16 @@
         <input type="hidden" id="field-file-url">
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-          
-          <!-- PROJECT NAME -->
           <div class="md:col-span-2">
             <label class="block text-xs font-extrabold text-slate-800 mb-1">ชื่อสิ่ง/โครงการที่ขออนุญาต <span class="text-rose-500">*</span></label>
             <input type="text" id="field-project-name" required placeholder="เช่น จัดซื้อโคมไฟถนนแบบโซล่าเซลล์..." class="w-full custom-input rounded-xl p-2.5 text-xs font-semibold">
           </div>
 
-          <!-- LOCATION FIXED DEFAULT -->
           <div>
             <label class="block text-xs font-extrabold text-slate-800 mb-1">อำเภอ / ตำบล / จังหวัด</label>
             <input type="text" value="ต.ท่าก๊อ อ.แม่สรวย จ.เชียงราย" readonly class="w-full border border-slate-200 bg-slate-100 rounded-xl p-2.5 text-xs font-bold text-slate-700">
           </div>
 
-          <!-- MOO & VILLAGE SELECTOR -->
           <div>
             <label class="block text-xs font-extrabold text-slate-800 mb-1">หมู่ที่ / ชื่อหมู่บ้าน <span class="text-rose-500">*</span></label>
             <select id="field-moo" required class="w-full custom-input rounded-xl p-2.5 text-xs font-bold">
@@ -266,7 +251,6 @@
             </select>
           </div>
 
-          <!-- AGENCY CATEGORY -->
           <div>
             <label class="block text-xs font-extrabold text-slate-800 mb-1">หน่วยงานขอรับการสนับสนุน <span class="text-rose-500">*</span></label>
             <select id="field-agency-category" onchange="toggleCustomAgency()" required class="w-full custom-input rounded-xl p-2.5 text-xs font-bold">
@@ -281,7 +265,6 @@
             <input type="text" id="field-custom-agency" placeholder="เช่น กรมป่าไม้ / กรมชลประทาน" class="w-full custom-input rounded-xl p-2.5 text-xs font-bold">
           </div>
 
-          <!-- WORK ACTIVITY TYPE -->
           <div>
             <label class="block text-xs font-extrabold text-slate-800 mb-1">ประเภทงาน / กิจกรรมที่ขออนุญาต <span class="text-rose-500">*</span></label>
             <select id="field-work-activity-type" onchange="toggleCustomActivity()" required class="w-full custom-input rounded-xl p-2.5 text-xs font-bold">
@@ -298,19 +281,16 @@
             <input type="text" id="field-custom-activity" placeholder="ระบุประเภทกิจกรรม..." class="w-full custom-input rounded-xl p-2.5 text-xs font-bold">
           </div>
 
-          <!-- BUDGET AMOUNT FIELD -->
           <div>
             <label class="block text-xs font-extrabold text-slate-800 mb-1">งบประมาณโครงการ (บาท)</label>
             <input type="number" step="0.01" id="field-budget-amount" placeholder="เช่น 500000" class="w-full custom-input rounded-xl p-2.5 text-xs font-extrabold text-indigo-700">
           </div>
 
-          <!-- REQUEST DATE (OPTIONAL FIELD) -->
           <div>
             <label class="block text-xs font-extrabold text-slate-800 mb-1">วันที่ยื่นขออนุญาต <span class="text-slate-400 font-normal">(เว้นว่างไว้ก่อนได้)</span></label>
             <input type="date" id="field-request-date" class="w-full custom-input rounded-xl p-2.5 text-xs font-bold">
           </div>
 
-          <!-- PROCESS STAGE & STATUS -->
           <div class="md:col-span-2 bg-indigo-50/50 p-3.5 rounded-xl border border-indigo-100 space-y-3">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
@@ -334,13 +314,11 @@
             </div>
           </div>
 
-          <!-- SCOPE & DETAILS (TEXTAREA) -->
           <div class="md:col-span-2">
             <label class="block text-xs font-extrabold text-slate-800 mb-1">รายละเอียดโครงการ / ขอบเขตงาน</label>
             <textarea id="field-scope-detail" rows="3" placeholder="ระบุรายละเอียดการดำเนินงาน ขอบเขตงาน หรือแบบแปลนย่อ..." class="w-full custom-input rounded-xl p-2.5 text-xs font-semibold"></textarea>
           </div>
 
-          <!-- CONDITIONAL LICENSE FIELDS -->
           <div id="section-approved-license" class="md:col-span-2 hidden space-y-4 pt-2 border-t border-slate-200">
             <h4 class="font-extrabold text-emerald-700 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <i class="fa-solid fa-certificate"></i> ข้อมูลใบอนุญาตที่ได้รับอนุมัติ
@@ -389,12 +367,10 @@
             </div>
           </div>
 
-          <!-- REMARK FIELD -->
           <div class="md:col-span-2">
             <label class="block text-xs font-extrabold text-slate-800 mb-1">หมายเหตุเพิ่มเติม</label>
             <input type="text" id="field-remark" placeholder="หมายเหตุหรือข้อมูลติดตามงานเพิ่มเติม..." class="w-full custom-input rounded-xl p-2.5 text-xs font-semibold">
           </div>
-
         </div>
 
         <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-200">
@@ -410,7 +386,6 @@
     const ADMIN_PASSWORD = "12345";
     const LOCAL_CACHE_KEY = "LICENSE_LOCAL_CACHE";
 
-    // 28 UPDATED VILLAGES IN TAMBON THA KHO
     const VILLAGE_LIST = [
       { moo: 1, name: "บ้านดินดำ" }, { moo: 2, name: "บ้านป่าถ่อน" }, { moo: 3, name: "บ้านป่าลัน" },
       { moo: 4, name: "บ้านแม่ต๋ำ" }, { moo: 5, name: "บ้านสบก๊อ" }, { moo: 6, name: "บ้านท่าก๊อพลับพลา" },
@@ -433,20 +408,18 @@
       loadData();
     });
 
-    /**
-     * SAFE FETCH PARSER TO PREVENT UNEXPECTED TOKEN ERRORS
-     */
     async function safeFetchJson(url, options = {}) {
       try {
         const res = await fetch(url, options);
         const text = await res.text();
-        
         if (text.trim().startsWith('<')) {
-          return { status: 'success', isRedirectHtml: true, data: [] };
+          console.warn('GAS ตอบกลับเป็น HTML (เช็คการตั้งค่า Deploy Anyone):', text);
+          return { status: 'error', isRedirectHtml: true, data: null };
         }
         return JSON.parse(text);
       } catch (e) {
-        return { status: 'success', isFallback: true, data: [] };
+        console.error('Fetch Error:', e);
+        return { status: 'error', isFallback: true, data: null };
       }
     }
 
@@ -530,7 +503,6 @@
       }
     }
 
-    // SKELETON SHIMMER FOR INSTANT VISUAL FEEDBACK
     function renderSkeleton() {
       const tbody = document.getElementById('table-body');
       const mobileContainer = document.getElementById('mobile-cards-container');
@@ -567,29 +539,45 @@
     }
 
     async function loadData() {
-      // 1. FAST RENDER FROM LOCALSTORAGE CACHE (STALE-WHILE-REVALIDATE)
       const cached = localStorage.getItem(LOCAL_CACHE_KEY);
+      let hasCacheData = false;
+
       if (cached) {
         try {
-          globalData = JSON.parse(cached) || [];
-          renderKPI();
-          renderTable();
-        } catch(e) {}
-      } else {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            globalData = parsed;
+            renderKPI();
+            renderTable();
+            hasCacheData = true;
+          }
+        } catch(e) {
+          localStorage.removeItem(LOCAL_CACHE_KEY);
+        }
+      }
+
+      if (!hasCacheData) {
         renderSkeleton();
       }
 
-      // 2. BACKGROUND FETCH FRESH DATA FROM GAS
       try {
         const json = await safeFetchJson(GAS_WEB_APP_URL);
-        if (json && json.data) {
-          globalData = json.data || [];
-          localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(globalData));
+        
+        if (json && json.status === 'success' && Array.isArray(json.data)) {
+          globalData = json.data;
+          if (globalData.length > 0) {
+            localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(globalData));
+          }
+          renderKPI();
+          renderTable();
+        } else if (!hasCacheData) {
+          globalData = [];
+          renderKPI();
+          renderTable();
         }
-        renderKPI();
-        renderTable();
       } catch (err) {
-        if (!cached) {
+        console.error("Load Data Error:", err);
+        if (!hasCacheData) {
           globalData = [];
           renderKPI();
           renderTable();
@@ -678,12 +666,10 @@
 
         const budgetFormatted = item.budget_amount ? Number(item.budget_amount).toLocaleString('th-TH') + ' ฿' : '-';
 
-        // LOGIC FIX: DISPLAY CORRECT STAGE & STATUS SUBTITLE
         const isApprovedStage = item.process_stage === 'ออกใบอนุญาตแล้ว';
         const displayStageTitle = isApprovedStage ? escapeHtml(item.license_number || 'ได้รับอนุมัติแล้ว') : 'อยู่ระหว่างยื่นขอ';
         const displayStageSub = isApprovedStage ? 'อนุมัติ / ออกใบอนุญาตแล้ว' : escapeHtml(item.request_status || 'อยู่ระหว่างจัดเตรียมเอกสาร');
 
-        // Desktop Row
         tbody.innerHTML += `
           <tr onclick="viewDetail('${item.id}')" class="${rowClass} cursor-pointer transition border-b border-slate-200/60">
             <td class="p-3.5 text-center font-extrabold text-slate-500">${index + 1}</td>
@@ -714,7 +700,6 @@
           </tr>
         `;
 
-        // Mobile Card
         mobileContainer.innerHTML += `
           <div onclick="viewDetail('${item.id}')" class="bento-card ${cardBgClass} p-4 space-y-3 cursor-pointer">
             <div class="flex justify-between items-start gap-2">
@@ -1033,7 +1018,7 @@
         }
 
         closeFormModal();
-        localStorage.removeItem(LOCAL_CACHE_KEY); // ล้างแคชฝั่งเบราว์เซอร์เพื่อให้ดึงข้อมูลใหม่
+        localStorage.removeItem(LOCAL_CACHE_KEY);
         await loadData();
 
       } catch (err) {
