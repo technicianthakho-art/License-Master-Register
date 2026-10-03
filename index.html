@@ -61,7 +61,7 @@
 
     .sort-header-btn {
       display: inline-flex;
-      items-center: center;
+      align-items: center;
       gap: 0.35rem;
       cursor: pointer;
       user-select: none;
@@ -69,6 +69,15 @@
     }
     .sort-header-btn:hover {
       color: #818cf8 !important;
+    }
+
+    /* Fixed Sticky Header Class for TH */
+    .sticky-th {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background-color: #0f172a !important; /* bg-slate-900 */
+      box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.15);
     }
   </style>
 </head>
@@ -172,62 +181,62 @@
       </div>
     </div>
 
-    <!-- DATA TABLE WITH STICKY HEADER & FIXED HEIGHT SCROLL -->
-    <div class="hidden md:block bento-card overflow-hidden border border-slate-200 shadow-sm max-h-[calc(100vh-210px)] overflow-y-auto custom-scrollbar">
-      <div class="overflow-x-auto custom-scrollbar">
+    <!-- DATA TABLE CONTAINER WITH GUARANTEED STICKY HEADER -->
+    <div class="hidden md:block bento-card overflow-hidden border border-slate-200 shadow-sm">
+      <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-210px)] custom-scrollbar relative">
         <table class="w-full text-left border-collapse text-xs min-w-[1350px]">
-          <thead class="sticky top-0 z-20 shadow-md">
+          <thead>
             <tr class="bg-slate-900 text-white font-extrabold uppercase tracking-wider text-[11px] border-b border-slate-800 select-none">
-              <th class="p-3.5 text-center w-14">
+              <th class="p-3.5 text-center w-14 sticky-th">
                 <div class="sort-header-btn justify-center" onclick="changeSort('order')">
                   <span>ลำดับ</span>
                   <i id="sort-icon-order" class="fa-solid fa-sort text-[10px] text-indigo-400"></i>
                 </div>
               </th>
-              <th class="p-3.5 w-[38%] min-w-[360px]">
+              <th class="p-3.5 w-[38%] min-w-[360px] sticky-th">
                 <div class="sort-header-btn" onclick="changeSort('project_name')">
                   <i class="fa-solid fa-folder-open text-indigo-400 mr-1"></i>
                   <span>ชื่อโครงการ / สถานที่</span>
                   <i id="sort-icon-project_name" class="fa-solid fa-sort text-[10px] text-slate-500"></i>
                 </div>
               </th>
-              <th class="p-3.5 w-48">
+              <th class="p-3.5 w-48 sticky-th">
                 <div class="sort-header-btn" onclick="changeSort('agency_category')">
                   <i class="fa-solid fa-building-columns text-indigo-400 mr-1"></i>
                   <span>หน่วยงาน / กิจกรรม</span>
                   <i id="sort-icon-agency_category" class="fa-solid fa-sort text-[10px] text-slate-500"></i>
                 </div>
               </th>
-              <th class="p-3.5 w-28 text-right">
+              <th class="p-3.5 w-28 text-right sticky-th">
                 <div class="sort-header-btn justify-end" onclick="changeSort('budget_amount')">
                   <i class="fa-solid fa-sack-dollar text-indigo-400 mr-1"></i>
                   <span>งบประมาณ</span>
                   <i id="sort-icon-budget_amount" class="fa-solid fa-sort text-[10px] text-slate-500"></i>
                 </div>
               </th>
-              <th class="p-3.5 w-44">
+              <th class="p-3.5 w-44 sticky-th">
                 <div class="sort-header-btn" onclick="changeSort('process_stage')">
                   <i class="fa-solid fa-list-check text-indigo-400 mr-1"></i>
                   <span>ขั้นตอน / เลขที่ใบ</span>
                   <i id="sort-icon-process_stage" class="fa-solid fa-sort text-[10px] text-slate-500"></i>
                 </div>
               </th>
-              <th class="p-3.5 w-36">
+              <th class="p-3.5 w-36 sticky-th">
                 <div class="sort-header-btn" onclick="changeSort('exp_date')">
                   <i class="fa-solid fa-calendar-days text-indigo-400 mr-1"></i>
                   <span>วันยื่น -> หมดอายุ</span>
                   <i id="sort-icon-exp_date" class="fa-solid fa-sort text-[10px] text-slate-500"></i>
                 </div>
               </th>
-              <th class="p-3.5 text-center w-32">
+              <th class="p-3.5 text-center w-32 sticky-th">
                 <div class="sort-header-btn justify-center" onclick="changeSort('doc_status')">
                   <i class="fa-solid fa-shield-halved text-indigo-400 mr-1"></i>
                   <span>สถานะ</span>
                   <i id="sort-icon-doc_status" class="fa-solid fa-sort text-[10px] text-slate-500"></i>
                 </div>
               </th>
-              <th class="p-3.5 text-center w-20"><i class="fa-solid fa-file-pdf text-indigo-400 mr-1"></i>ไฟล์แนบ</th>
-              <th class="p-3.5 text-center w-24 action-col"><i class="fa-solid fa-gear text-indigo-400 mr-1"></i>จัดการ</th>
+              <th class="p-3.5 text-center w-20 sticky-th"><i class="fa-solid fa-file-pdf text-indigo-400 mr-1"></i>ไฟล์แนบ</th>
+              <th class="p-3.5 text-center w-24 action-col sticky-th"><i class="fa-solid fa-gear text-indigo-400 mr-1"></i>จัดการ</th>
             </tr>
           </thead>
           <tbody id="table-body" class="divide-y divide-slate-200/60 font-medium bg-white"></tbody>
@@ -325,7 +334,7 @@
               <option value="ก่อสร้างสิ่งล่วงล้ำลำน้ำ">ก่อสร้างสิ่งล่วงล้ำลำน้ำ / ท่าเทียบเรือ</option>
               <option value="ขอใช้ประโยชน์พื้นที่อุทยาน/ป่าไม้">ขอใช้ประโยชน์พื้นที่อุทยาน / ป่าไม้</option>
               <option value="ติดตั้งระบบไฟฟ้า/โซล่าเซลล์">ติดตั้งระบบไฟฟ้า / ไฟถนนโซล่าเซลล์</option>
-              <option value="งานอาคาร/โครงสร้างพื้นฐาน">งานอาคาร / โครงสร้างพื้นฐาน</option>
+              <option value="งานอาคาร/โครงสร้างพื้นฐาน">งานอาคาร / โโครงสร้างพื้นฐาน</option>
               <option value="OTHER">อื่นๆ (โปรดระบุ...)</option>
             </select>
           </div>
